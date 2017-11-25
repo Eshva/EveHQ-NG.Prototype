@@ -88,7 +88,7 @@ function startApi() {
 
 	//  run server
 	let pathToExecutable: string;
-	switch (os.platform) {
+	switch (os.platform()) {
 		case 'win32':
 			pathToExecutable = 'windows//EveHQ.NG.WebApi.exe';
 			break;
