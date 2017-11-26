@@ -10,7 +10,16 @@ The third reason is I reenvisioned this tool. The legacy EveHQ is a banch of not
 ## Prototype targets ##
 So what is this prototype for?
 
-Before I will start to develop the real usefull code I need to solve some infrastructure problems. Too many new technologies will be used and should be banded together.
+Before I will start to develop the real usefull code I need to solve some infrastructure problems. Too many new technologies will be used and should be banded together. The application will be distributed as a standalone multi platform application for Windows, Linux and MacOS. It will use CCP's SSO-authentication and ESI web-services to do it's job but will be able to work with no internet connection in some kind of offline-mode. To be able utilize SSO-authentication it should be able to register a custom protocol (URL-scheme).
+
+Unfortunatly I have no Mac and don't plan to spend money to buy it. May be someday I will setup a Hackintosh in a virtual machine but up then the MacOS version is not a target. I will test this prototype only on Windows 10 and Ubuntu 17.10.
+
+So the list of must have features of this prototype is as follows (on both Windows and Linux):
+* Buildable.
+* Register custom protocol.
+* Singleton instance.
+* Add an EVE-character using SSO-authentication.
+* Aqure and display the character info and the current skill training queue using ESI web-service.
 
 ## Build ##
 You need to use npm 4.6.1. Newer versions up to current (5.5.1) are buggy.
