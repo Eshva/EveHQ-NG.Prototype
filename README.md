@@ -15,11 +15,17 @@ Before I will start to develop the real usefull code I need to solve some infras
 Unfortunatly I have no Mac and don't plan to spend money to buy it. May be someday I will setup a Hackintosh in a virtual machine but up then the MacOS version is not a target. I will test this prototype only on Windows 10 and Ubuntu 17.10.
 
 So the list of must have features of this prototype is as follows (on both Windows and Linux):
-* Buildable.
-* Register custom protocol.
-* Singleton instance.
-* Add an EVE-character using SSO-authentication.
-* Aqure and display the character info and the current skill training queue using ESI web-service.
+* [x] Buildable.
+* [ ] Register custom protocol.
+* [ ] Singleton instance.
+* [ ] Add an EVE-character using SSO-authentication.
+* [ ] Aqure and display the character info and the current skill training queue using ESI web-service.
+
+## The Base Architecture ##
+* Frontend implemented using the current Angular version. So it is a SPA.
+* Backend implemented using .NET Core 2. 
+* Frontend talks to backend using ASP.NET Core web-service.
+* Frontend and backend placed into an Electron shell.
 
 ## Build ##
 You need to use npm 4.6.1. Newer versions up to current (5.5.1) are buggy.
