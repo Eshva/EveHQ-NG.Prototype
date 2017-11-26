@@ -90,13 +90,13 @@ function startApi() {
 	let pathToExecutable: string;
 	switch (os.platform()) {
 		case 'win32':
-			pathToExecutable = 'windows//EveHQ.NG.WebApi.exe';
+			pathToExecutable = 'publish//EveHQ.NG.WebApi.exe';
 			break;
 		case 'linux':
 			pathToExecutable = 'publish//EveHQ.NG.WebApi';
 			break;
 		case 'darwin':
-			pathToExecutable = 'osx//EveHQ.NG.WebApi';
+			pathToExecutable = 'publish//EveHQ.NG.WebApi';
 			break;
 		default:
 			throw Error(`Unknown platform: ${os.platform()}`);
