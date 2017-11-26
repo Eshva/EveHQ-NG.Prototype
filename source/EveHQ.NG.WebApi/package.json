@@ -28,7 +28,7 @@
 	"pack": "electron-builder --win"
   },
   "build": {
-	"appId": "cross-platform-desktop",
+	"appId": "ng.evehq.co",
 	"asar": false,
 	"directories": {
 	  "output": "../bin/release",

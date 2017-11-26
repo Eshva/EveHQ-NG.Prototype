@@ -1,4 +1,4 @@
-import { app, BrowserWindow, screen } from 'electron';
+import { app, BrowserWindow, screen, dialog } from 'electron';
 import * as path from 'path';
 
 
@@ -13,44 +13,38 @@ if (serve) {
 }
 
 let win: Electron.BrowserWindow | null;
-
-function createWindow() {
-
-	const electronScreen = screen;
-	const size = electronScreen.getPrimaryDisplay().workAreaSize;
-
-	// Create the browser window.
-	win = new BrowserWindow({
-		x: 0,
-		y: 0,
-		width: size.width,
-		height: size.height
-	});
-
-	// and load the index.html of the app.
-	win.loadURL(`file://${__dirname}/index.html`);
-
-	// Open the DevTools.
-	if (serve) {
-		win.webContents.openDevTools();
-	}
-
-	// Emitted when the window is closed.
-	win.on('closed',
-		() => {
-			// Dereference the window object, usually you would store window
-			// in an array if your app supports multi windows, this is the time
-			// when you should delete the corresponding element.
-			win = null;
-		});
-}
-
 try {
+
+	let isItSecondInstance = app.makeSingleInstance(
+		(otherInstanceArguments: string[], workingDirectory: string) => {
+			if (win) {
+				if (win.isMinimized()) {
+					win.restore();
+				}
+
+				win.focus();
+
+				const message = `Arguments: ${otherInstanceArguments.join(', ')}`;
+				dialog.showMessageBox(
+					win,
+					{
+						type: 'info',
+						message: message
+					});
+			}
+		});
+
+	if (isItSecondInstance) {
+		app.quit();
+	}
 
 	// This method will be called when Electron has finished
 	// initialization and is ready to create browser windows.
 	// Some APIs can only be used after this event occurs.
-	app.on('ready', startApi);
+	app.on('ready',
+		() => {
+			startApi();
+		});
 
 	// Quit when all windows are closed.
 	app.on('window-all-closed',
@@ -110,5 +104,36 @@ function startApi() {
 			if (win == null) {
 				createWindow();
 			}
+		});
+}
+
+function createWindow() {
+
+	const electronScreen = screen;
+	const size = electronScreen.getPrimaryDisplay().workAreaSize;
+
+	// Create the browser window.
+	win = new BrowserWindow({
+		x: 0,
+		y: 0,
+		width: size.width,
+		height: size.height
+	});
+
+	// and load the index.html of the app.
+	win.loadURL(`file://${__dirname}/index.html`);
+
+	// Open the DevTools.
+	if (serve) {
+		win.webContents.openDevTools();
+	}
+
+	// Emitted when the window is closed.
+	win.on('closed',
+		() => {
+			// Dereference the window object, usually you would store window
+			// in an array if your app supports multi windows, this is the time
+			// when you should delete the corresponding element.
+			win = null;
 		});
 }
