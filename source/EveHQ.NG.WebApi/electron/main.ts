@@ -93,7 +93,7 @@ function startApi() {
 			pathToExecutable = 'windows//EveHQ.NG.WebApi.exe';
 			break;
 		case 'linux':
-			pathToExecutable = 'linux//EveHQ.NG.WebApi';
+			pathToExecutable = 'publish//EveHQ.NG.WebApi';
 			break;
 		case 'darwin':
 			pathToExecutable = 'osx//EveHQ.NG.WebApi';

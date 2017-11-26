@@ -17,7 +17,8 @@
     "start": "ng serve",
     "build:windows:service:dev": "dotnet publish ../EveHQ-NG.sln --runtime win-x64 --configuration Debug --self-contained && copyfiles --up 6 --all ../bin/deb/core/win-x64/publish/**/* ../bin/dist/windows",
     "build:linux:service:dev": "rm -r -f ../bin/deb/core/linux-x64/ && dotnet publish ../EveHQ-NG.sln --runtime linux-x64 --configuration Debug --self-contained",
-    "build:linux:copyservice:dev": "copyfiles --up 6 --all \"../bin/deb/core/linux-x64/publish/**/*\" ../bin/dist/linux",
+    "build:linux:copyservice:dev1": "copyfiles --up 6 --all \"../bin/deb/core/linux-x64/publish/**/*\" ../bin/dist/linux",
+    "build:linux:copyservice:dev": "cd ../bin/deb/core/linux-x64/ && fsys --task=copy --filesFolders=publish --destination=../../../dist/ --clobber='false' --preserveTimestamps='true' && cd ../../../../",
     "build:ui:dev": "ng build",
     "build:windows:prepare:dev": "npm run build:ui:dev && npm run build:windows:service:dev && npm run electrontsc && ncp electron/package.json ../bin/dist/package.json",
     "build:linux:prepare:dev": "npm run build:ui:dev && npm run build:linux:service:dev && npm run build:linux:copyservice:dev && npm run electrontsc && ncp electron/package.json ../bin/dist/package.json",
@@ -50,10 +51,9 @@
       "category": "Graphics",
       "files": [
         "**/*",
-        "linux"
+        "publish"
       ],
       "target": [
-        "AppImage",
         "deb"
       ]
     },
@@ -84,6 +84,7 @@
     "@types/node": "7.0.7",
     "autoprefixer": "7.1.5",
     "codelyzer": "3.2.0",
+    "copy-dir-cli": "0.0.3",
     "copyfiles": "1.2.0",
     "cross-env": "5.0.5",
     "css-loader": "0.28.7",
@@ -92,6 +93,7 @@
     "electron-builder": "19.37.2",
     "exports-loader": "0.6.4",
     "file-loader": "0.11.2",
+    "fs-extra-cli": "0.0.4",
     "html-loader": "0.5.1",
     "istanbul-instrumenter-loader": "3.0.0",
     "json-loader": "0.5.7",
