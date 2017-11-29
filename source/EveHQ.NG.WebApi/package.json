@@ -1,5 +1,6 @@
 {
-  "name": "evehq-ng",
+	"name": "evehq-ng",
+	"productName": "EveHQ NG",
   "version": "0.0.1",
   "description": "EVE Online professions support tool",
   "homepage": "https://evehq.co",
@@ -53,14 +54,18 @@
 		"allowToChangeInstallationDirectory" : true
 	},
 	"linux": {
-	  "category": "Graphics",
+	  "category": "Game;Utility;",
+	  "packageCategory": "Game;Utility;",
 	  "files": [
 		"**/*",
 		"publish"
 	  ],
 	  "target": [
 		"deb"
-	  ]
+    ],
+    "desktop": {
+      "MimeType": "x-scheme-handler/evehq-ng;"
+    }
 	},
 	"appImage": {},
 	"deb": {
