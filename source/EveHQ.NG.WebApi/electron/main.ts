@@ -81,6 +81,18 @@ function startApi() {
 	const childProcess = require('child_process').spawn;
 
 	//  run server
+	webApiProcess = childProcess(buildPathToWebApi());
+	webApiProcess.stdout.on('data',
+		(data: any) => {
+			console.log(`stdout: ${data}`);
+
+			if (win == null) {
+				createWindow();
+			}
+		});
+}
+
+function buildPathToWebApi(): string {
 	let pathToExecutable: string;
 	switch (os.platform()) {
 		case 'win32':
@@ -96,15 +108,12 @@ function startApi() {
 			throw Error(`Unknown platform: ${os.platform()}`);
 	}
 
-	webApiProcess = childProcess(path.join(__dirname, pathToExecutable));
-	webApiProcess.stdout.on('data',
-		(data: any) => {
-			console.log(`stdout: ${data}`);
+	const appPath = app.getAppPath();
+	const basePath = path.resolve(appPath, '..', '..', 'resources');
+	const isAsar = !!appPath.match(/\.asar$/);
+	const unpackedFolder = isAsar ? 'app.asar.unpacked' : 'app';
 
-			if (win == null) {
-				createWindow();
-			}
-		});
+	return path.join(basePath, unpackedFolder, pathToExecutable);
 }
 
 function createWindow() {
