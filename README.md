@@ -16,8 +16,8 @@ Unfortunatly I have no Mac and don't plan to spend money to buy it. May be somed
 
 So the list of must have features of this prototype is as follows (on both Windows and Linux):
 * [x] Buildable.
-* [ ] Register custom protocol.
-* [ ] Singleton instance.
+* [x] Register custom protocol.
+* [x] Singleton instance.
 * [ ] Add an EVE-character using SSO-authentication.
 * [ ] Aqure and display the character info and the current skill training queue using ESI web-service.
 
