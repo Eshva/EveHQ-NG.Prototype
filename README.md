@@ -20,6 +20,8 @@ So the list of must have features of this prototype is as follows (on both Windo
 * [x] Singleton instance.
 * [ ] Add an EVE-character using SSO-authentication.
 * [ ] Aqure and display the character info and the current skill training queue using ESI web-service.
+* [ ] HMR for Electron main.
+* [ ] HMR for Electron renderer.
 
 ## The Base Architecture ##
 * Frontend implemented using the current Angular version. So it is a SPA.
