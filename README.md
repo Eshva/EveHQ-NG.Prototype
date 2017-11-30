@@ -1,5 +1,5 @@
-# EveHQ-NG proof of concepts application #
-It is a EveHQ-NG proof of concepts application. EveHQ-NG stands for EveHQ Next Generation. EveHQ itself is a well known support application for Eve Online game. I am the current maintainer of EveHQ. And it will die on May 2018. Why? Because CCP, the company behind the Eve Online will depricate some web-services on May 2018 that EveHQ uses and support other that not used by EveHQ.
+# EveHQ NG proof of concepts application #
+It is a EveHQ NG proof of concepts application. EveHQ NG stands for EveHQ Next Generation. EveHQ itself is a well known support application for Eve Online game. I am the current maintainer of EveHQ. And it will die on May 2018. Why? Because CCP, the company behind the Eve Online will depricate some web-services on May 2018 that EveHQ uses and support other that not used by EveHQ.
 
 Why don't I update the present version of EveHQ to use the new web-services? Because the change is huge and the source code of EveHQ is shit. It easer to rewrite the application from scratch than update its code. Spagetti-code written in VB.NET using WinForms RAD-approach where UI-code mixed with web-related code in files tens thousand lines files... Programmers will understand me.
 
