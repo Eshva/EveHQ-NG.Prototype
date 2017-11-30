@@ -88,6 +88,7 @@ function startApi() {
 
 			if (win == null) {
 				createWindow();
+				win.webContents.openDevTools();
 			}
 		});
 }

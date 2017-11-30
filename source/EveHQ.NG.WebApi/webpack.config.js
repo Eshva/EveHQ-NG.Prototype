@@ -207,6 +207,7 @@ function getPlugins() {
 
 module.exports = {
 	"devtool": 'source-map',
+	'target': 'electron-renderer',
 	"externals": {
 		"electron": "require('electron')",
 		"child_process": "require('child_process')",

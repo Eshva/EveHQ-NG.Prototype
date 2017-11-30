@@ -32,7 +32,8 @@
 		"electron:dev": "npm run build:windows:prepare:dev && electron ../bin/dist",
 		"electron:windows:package:dev": "npm run build:windows:prepare:dev && electron-builder --win",
 		"electron:linux:package:dev": "npm run build:linux:prepare:dev && electron-builder --linux",
-		"pack": "electron-builder --win"
+		"pack": "electron-builder --win",
+		"serve": "electron ../bin/dist"
 	},
 	"build": {
 		"appId": "ng.evehq.co",
@@ -73,7 +74,7 @@
 				"deb"
 			],
 			"desktop": {
-				"MimeType": "x-scheme-handler/evehq-ng;"
+				"MimeType": "x-scheme-handler/eveauth-evehq-ng;"
 			}
 		},
 		"deb": {
@@ -82,7 +83,7 @@
 		"protocols": {
 			"name": "EveHQ NG auth protocol",
 			"schemes": [
-				"evehq-ng"
+				"eveauth-evehq-ng"
 			]
 		}
 	},
