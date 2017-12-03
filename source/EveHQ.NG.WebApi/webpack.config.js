@@ -30,10 +30,10 @@ const scripts = [
 ];
 
 //create file path for each , so we use for our excludes and includes where needed
-let style_paths = styles.map(style_src => path.join(process.cwd(), style_src));
+let stylePaths = styles.map(style_src => path.join(process.cwd(), style_src));
 
 function getPlugins() {
-	var plugins = [];
+	const plugins = [];
 
 	// Always expose NODE_ENV to webpack, you can now use `process.env.NODE_ENV`
 	// inside your code for any environment checks; UglifyJS will automatically
@@ -208,28 +208,6 @@ function getPlugins() {
 module.exports = {
 	"devtool": 'source-map',
 	'target': 'electron-renderer',
-	"externals": {
-		"electron": "require('electron')",
-		"child_process": "require('child_process')",
-		"crypto": "require('crypto')",
-		"events": "require('events')",
-		"fs": "require('fs')",
-		"http": "require('http')",
-		"https": "require('https')",
-		"assert": "require('assert')",
-		"dns": "require('dns')",
-		"net": "require('net')",
-		"os": "require('os')",
-		"path": "require('path')",
-		"querystring": "require('querystring')",
-		"readline": "require('readline')",
-		"repl": "require('repl')",
-		"stream": "require('stream')",
-		"string_decoder": "require('string_decoder')",
-		"url": "require('url')",
-		"util": "require('util')",
-		"zlib": "require('zlib')"
-	},
 	"resolve": {
 		"extensions": [
 			'.ts',
@@ -290,7 +268,7 @@ module.exports = {
 				"loader": 'url-loader?name=[name].[hash:20].[ext]&limit=10000'
 			},
 			{
-				"exclude": style_paths,
+				"exclude": stylePaths,
 				"test": /\.css$/,
 				"loaders": [
 					'exports-loader?module.exports.toString()',
@@ -299,7 +277,7 @@ module.exports = {
 				]
 			},
 			{
-				"exclude": style_paths,
+				"exclude": stylePaths,
 				"test": /\.scss$|\.sass$/,
 				"loaders": [
 					'exports-loader?module.exports.toString()',
@@ -309,7 +287,7 @@ module.exports = {
 				]
 			},
 			{
-				"include": style_paths,
+				"include": stylePaths,
 				"test": /\.css$/,
 				"loaders": ExtractTextPlugin.extract({
 					"use": [
@@ -321,7 +299,7 @@ module.exports = {
 				})
 			},
 			{
-				"include": style_paths,
+				"include": stylePaths,
 				"test": /\.scss$|\.sass$/,
 				"loaders": ExtractTextPlugin.extract({
 					"use": [
@@ -339,18 +317,5 @@ module.exports = {
 			}
 		]
 	},
-	"plugins": getPlugins(),
-	"node": {
-		fs: 'empty',
-		global: true,
-		crypto: 'empty',
-		tls: 'empty',
-		net: 'empty',
-		process: true,
-		module: false,
-		clearImmediate: false,
-		setImmediate: false,
-		__dirname: false,
-		__filename: false
-	}
+	"plugins": getPlugins()
 };

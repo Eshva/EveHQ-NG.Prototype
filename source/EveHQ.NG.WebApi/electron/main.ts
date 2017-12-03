@@ -12,21 +12,21 @@ if (serve) {
 	require('electron-reload')(__dirname, {});
 }
 
-let win: Electron.BrowserWindow | null;
+let mainWindow: Electron.BrowserWindow | null;
 try {
 
 	let isItSecondInstance = app.makeSingleInstance(
 		(otherInstanceArguments: string[], workingDirectory: string) => {
-			if (win) {
-				if (win.isMinimized()) {
-					win.restore();
+			if (mainWindow) {
+				if (mainWindow.isMinimized()) {
+					mainWindow.restore();
 				}
 
-				win.focus();
+				mainWindow.focus();
 
 				const message = `Arguments: ${otherInstanceArguments.join(', ')}`;
 				dialog.showMessageBox(
-					win,
+					mainWindow,
 					{
 						type: 'info',
 						message: message
@@ -63,8 +63,8 @@ try {
 		() => {
 			// On OS X it's common to re-create a window in the app when the
 			// dock icon is clicked and there are no other windows open.
-			if (win === null) {
-				createWindow();
+			if (mainWindow === null) {
+				createMainWindow();
 			}
 		});
 
@@ -74,7 +74,7 @@ catch (e) {
 	// throw e;
 }
 finally {
-	win = null;
+	mainWindow = null;
 }
 
 function startApi() {
@@ -86,9 +86,9 @@ function startApi() {
 		(data: any) => {
 			console.log(`stdout: ${data}`);
 
-			if (win == null) {
-				createWindow();
-				win.webContents.openDevTools();
+			if (mainWindow == null) {
+				createMainWindow();
+				mainWindow.webContents.openDevTools();
 			}
 		});
 }
@@ -100,8 +100,6 @@ function buildPathToWebApi(): string {
 			pathToExecutable = 'publish//EveHQ.NG.WebApi.exe';
 			break;
 		case 'linux':
-			pathToExecutable = 'publish//EveHQ.NG.WebApi';
-			break;
 		case 'darwin':
 			pathToExecutable = 'publish//EveHQ.NG.WebApi';
 			break;
@@ -117,13 +115,13 @@ function buildPathToWebApi(): string {
 	return path.join(basePath, unpackedFolder, pathToExecutable);
 }
 
-function createWindow() {
+function createMainWindow() {
 
 	const electronScreen = screen;
 	const size = electronScreen.getPrimaryDisplay().workAreaSize;
 
 	// Create the browser window.
-	win = new BrowserWindow({
+	mainWindow = new BrowserWindow({
 		x: 0,
 		y: 0,
 		width: size.width,
@@ -131,19 +129,19 @@ function createWindow() {
 	});
 
 	// and load the index.html of the app.
-	win.loadURL(`file://${__dirname}/index.html`);
+	mainWindow.loadURL(`file://${__dirname}/index.html`);
 
 	// Open the DevTools.
 	if (serve) {
-		win.webContents.openDevTools();
+		mainWindow.webContents.openDevTools();
 	}
 
 	// Emitted when the window is closed.
-	win.on('closed',
+	mainWindow.on('closed',
 		() => {
 			// Dereference the window object, usually you would store window
 			// in an array if your app supports multi windows, this is the time
 			// when you should delete the corresponding element.
-			win = null;
+			mainWindow = null;
 		});
 }
