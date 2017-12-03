@@ -1,0 +1,53 @@
+{
+	"appId": "ng.evehq.co",
+	"asar": true,
+	"asarUnpack": [
+		"publish"
+	],
+	"directories": {
+		"output": "../bin/release",
+		"app": "../bin/dist",
+		"buildResources": "build"
+	},
+	"artifactName": "${name}-${version}.${ext}",
+	"mac": {
+		"category": "cross-platform-desktop"
+	},
+	"win": {
+		"files": [
+			"**/*",
+			"publish"
+		],
+		"target": [
+			"nsis"
+		]
+	},
+	"nsis": {
+		"perMachine": true,
+		"oneClick": false,
+		"allowToChangeInstallationDirectory": true
+	},
+	"linux": {
+		"category": "Game;Utility;",
+		"packageCategory": "Game;Utility;",
+		"files": [
+			"**/*",
+			"publish"
+		],
+		"target": [
+			"deb"
+		],
+		"desktop": {
+			"MimeType": "x-scheme-handler/eveauth-evehq-ng;"
+		}
+	},
+	"deb": {
+		"synopsis": "EveHQ NG"
+	},
+	"protocols": {
+		"name": "EveHQ NG auth protocol",
+		"schemes": [
+			"eveauth-evehq-ng"
+		]
+	}
+}

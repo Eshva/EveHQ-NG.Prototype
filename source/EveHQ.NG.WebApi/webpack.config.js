@@ -240,7 +240,7 @@ module.exports = {
 		"styles": styles
 	},
 	"output": {
-		"path": path.join(process.cwd(), '../compiled/temp/offline'),
+		"path": path.join(process.cwd(), '../bin/dist'),
 		"filename": '[name].bundle.js',
 		"chunkFilename": '[id].chunk.js'
 	},
@@ -317,5 +317,20 @@ module.exports = {
 			}
 		]
 	},
+/*
+	"node": {
+		fs: 'empty',
+		global: true,
+		crypto: 'empty',
+		tls: 'empty',
+		net: 'empty',
+		process: true,
+		module: false,
+		clearImmediate: false,
+		setImmediate: false,
+		__dirname: false,
+		__filename: false
+	},
+*/
 	"plugins": getPlugins()
 };

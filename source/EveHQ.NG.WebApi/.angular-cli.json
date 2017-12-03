@@ -1,6 +1,7 @@
 {
 	"project": {
-		"name": "evehq-ng"
+		"name": "evehq-ng",
+		"ejected": true
 	},
 	"apps": [
 		{

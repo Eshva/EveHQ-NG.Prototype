@@ -1,7 +1,6 @@
 import { app, BrowserWindow, screen, dialog } from 'electron';
 import * as path from 'path';
 
-
 const os = require('os');
 let webApiProcess: any;
 
@@ -9,7 +8,7 @@ const args = process.argv.slice(1);
 let serve = args.some(val => val === '--serve');
 
 if (serve) {
-	require('electron-reload')(__dirname, {});
+	require('electron-reload')(__dirname);
 }
 
 let mainWindow: Electron.BrowserWindow | null;
@@ -108,6 +107,11 @@ function buildPathToWebApi(): string {
 	}
 
 	const appPath = app.getAppPath();
+
+	if (serve) {
+		return path.join(appPath, pathToExecutable);
+	}
+
 	const basePath = path.resolve(appPath, '..', '..', 'resources');
 	const isAsar = !!appPath.match(/\.asar$/);
 	const unpackedFolder = isAsar ? 'app.asar.unpacked' : 'app';
