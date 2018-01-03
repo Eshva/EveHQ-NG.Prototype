@@ -1,5 +1,10 @@
 #region Usings
 
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Autofac;
+using Autofac.Extensions.DependencyInjection;
+using EveHQ.NG.WebApi.Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -11,6 +16,7 @@ using Newtonsoft.Json.Serialization;
 
 namespace EveHQ.NG.WebApi
 {
+	[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global", Justification = "Constructed by ASP.NET Core")]
 	public class Startup
 	{
 		public Startup(IConfiguration configuration)
@@ -18,10 +24,12 @@ namespace EveHQ.NG.WebApi
 			Configuration = configuration;
 		}
 
+		[SuppressMessage("ReSharper", "MemberCanBePrivate.Global", Justification = "Used by ASP.NET Core")]
+		[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 		public IConfiguration Configuration { get; }
 
-		// This method gets called by the runtime. Use this method to add services to the container.
-		public void ConfigureServices(IServiceCollection services)
+		[SuppressMessage("ReSharper", "UnusedMember.Global", Justification = "Called by ASP.NET Core")]
+		public IServiceProvider ConfigureServices(IServiceCollection services)
 		{
 			// Add framework services.
 			services.AddMvc().AddJsonOptions(
@@ -30,17 +38,26 @@ namespace EveHQ.NG.WebApi
 					//return json format with Camel Case
 					options.SerializerSettings.ContractResolver = new DefaultContractResolver();
 				});
+
+			_applicationContainer = new IocContainerBootstrapper().BuildContainer(services);
+			return new AutofacServiceProvider(_applicationContainer);
 		}
 
-		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-		public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+		[SuppressMessage("ReSharper", "UnusedMember.Global", Justification = "Called by ASP.NET Core")]
+		public void Configure(
+			IApplicationBuilder applicationBuilder,
+			IHostingEnvironment hostingEnvironment,
+			IApplicationLifetime applicationLifetime)
 		{
-			if (env.IsDevelopment())
+			if (hostingEnvironment.IsDevelopment())
 			{
-				app.UseDeveloperExceptionPage();
+				applicationBuilder.UseDeveloperExceptionPage();
 			}
 
-			app.UseMvc();
+			applicationBuilder.UseMvc();
+			applicationLifetime.ApplicationStopped.Register(() => _applicationContainer.Dispose());
 		}
+
+		private IContainer _applicationContainer;
 	}
 }

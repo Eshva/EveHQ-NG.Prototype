@@ -7,6 +7,7 @@
 #region Usings
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -22,7 +23,8 @@ using Newtonsoft.Json;
 
 namespace EveHQ.NG.WebApi.Sso
 {
-	public class SsoAuthenticator : IOAuthAuthenticatior
+	[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global", Justification = "Constructed by IoC container.")]
+	public sealed class SsoAuthenticator : IOAuthAuthenticator
 	{
 		public string GetAuthenticationUri()
 		{

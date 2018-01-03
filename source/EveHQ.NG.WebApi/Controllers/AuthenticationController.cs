@@ -18,6 +18,11 @@ namespace EveHQ.NG.WebApi.Controllers
 	[Route("api/[controller]")]
 	public sealed class AuthenticationController : Controller
 	{
+		public AuthenticationController(IOAuthAuthenticator authenticator)
+		{
+			_authenticator = authenticator;
+		}
+
 		[HttpGet("GetAuthenticationUri")]
 		public IActionResult GetAuthenticationUri()
 		{
@@ -31,6 +36,6 @@ namespace EveHQ.NG.WebApi.Controllers
 			return Ok();
 		}
 
-		private static readonly IOAuthAuthenticatior _authenticator = new SsoAuthenticator();
+		private readonly IOAuthAuthenticator _authenticator;
 	}
 }
