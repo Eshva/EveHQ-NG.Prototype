@@ -1,0 +1,19 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\eveauth-evehq-ng]
+@="EveHQ NG SSO authentication Protocol"
+"URL Protocol"=""
+"EditFlags"=hex:00,21,00,00
+
+[HKEY_CLASSES_ROOT\eveauth-evehq-ng\DefaultIcon]
+@="B:\\Projects\\GitHub\\Eshva\\EveHQ-NG.Prototype\\source\\bin\\release\\win-unpacked\\EveHQ NG.exe"
+
+[HKEY_CLASSES_ROOT\eveauth-evehq-ng\shell]
+@=""
+
+[HKEY_CLASSES_ROOT\eveauth-evehq-ng\shell\open]
+@=""
+
+[HKEY_CLASSES_ROOT\eveauth-evehq-ng\shell\open\command]
+@="B:\\Projects\\GitHub\\Eshva\\EveHQ-NG.Prototype\\source\\bin\\release\\win-unpacked\\EveHQ NG.exe %1"
+

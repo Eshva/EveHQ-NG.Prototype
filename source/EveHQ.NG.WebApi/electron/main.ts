@@ -1,4 +1,4 @@
-import { app, BrowserWindow, screen, dialog } from 'electron';
+import { app, BrowserWindow, screen, net, dialog } from 'electron';
 import * as path from 'path';
 
 const os = require('os');
@@ -22,14 +22,9 @@ try {
 				}
 
 				mainWindow.focus();
-
-				const message = `Arguments: ${otherInstanceArguments.join(', ')}`;
-				dialog.showMessageBox(
-					mainWindow,
-					{
-						type: 'info',
-						message: message
-					});
+				console.log('processArguments');
+				console.warn('processArgumentsprocessArguments');
+				processArguments(otherInstanceArguments);
 			}
 		});
 
@@ -148,4 +143,33 @@ function createMainWindow() {
 			// when you should delete the corresponding element.
 			mainWindow = null;
 		});
+}
+
+function processArguments(otherInstanceArguments: string[]) {
+	console.warn(`processArguments: ${otherInstanceArguments.join(', ')}`);
+	if (otherInstanceArguments.length !== 2) {
+		throw new Error('Number of arguments is invalid.');
+	}
+
+	const payload = otherInstanceArguments[1];
+	const match = /^eveauth-evehq-ng:\/\/sso-auth\/\?code=(.+?)&state=(.+?)$/.exec(payload);
+
+	if (match != null) {
+		const code = match[0];
+		const state = match[1];
+		const localAuthenticationServiceUrl =
+			`http://localhost:5000/api/authentication/setAuthorizationCode?codeUri=${code}&state=${state}`;
+		const authenticationRequest = net.request({
+			url: localAuthenticationServiceUrl,
+			method: 'POST'
+		});
+		authenticationRequest.on('response',
+			response => {
+				console.warn(`status of authentication call: ${response.statusCode}`);
+			});
+		authenticationRequest.end();
+	}
+	else {
+		throw new Error('Bad format of authentication code replay.');
+	}
 }

@@ -6,8 +6,8 @@
 
 #region Usings
 
-using System.Net;
-using System.Text;
+using System.Threading.Tasks;
+using EveHQ.NG.WebApi.Sso;
 using Microsoft.AspNetCore.Mvc;
 
 #endregion
@@ -15,25 +15,22 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EveHQ.NG.WebApi.Controllers
 {
-	[Route("api/[controller]/[action]")]
+	[Route("api/[controller]")]
 	public sealed class AuthenticationController : Controller
 	{
-		[HttpGet]
+		[HttpGet("GetAuthenticationUri")]
 		public IActionResult GetAuthenticationUri()
 		{
-			const string RedirectUri = "eveauth-evehq-ng://sso-auth/";
-			const string ClientId = "9158bdcbc32a49e29044be4266b029dd";
-			const string Scopes = "esi-skills.read_skillqueue.v1";
-			const string StateKey = "auth-state-key";
-
-			var uriBuilder = new StringBuilder("https://login.eveonline.com/oauth/authorize/");
-			uriBuilder.Append("?response_type=code")
-					.Append($"&redirect_uri={WebUtility.UrlEncode(RedirectUri)}")
-					.Append($"&client_id={ClientId}")
-					.Append($"&scope={WebUtility.UrlEncode(Scopes)}")
-					.Append($"&state={StateKey}");
-
-			return Json(uriBuilder.ToString());
+			return Json(_authenticator.GetAuthenticationUri());
 		}
+
+		[HttpPost("SetAuthorizationCode")]
+		public async Task<IActionResult> SetAuthorizationCodeAsync([FromQuery] string codeUri, [FromQuery] string state)
+		{
+			await _authenticator.SetAuthorizationCodeAsync(codeUri, state);
+			return Ok();
+		}
+
+		private static readonly IOAuthAuthenticatior _authenticator = new SsoAuthenticator();
 	}
 }

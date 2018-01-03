@@ -26,8 +26,9 @@
 		"start": "npm-run-all --parallel webpack:watch serve",
 		"electrontsc": "tsc -p ./electron/",
 		"webpack:watch": "webpack --watch",
-		"serve": "electron ../bin/dist --serve",
+		"serve": "electron ../bin/dist --serve --enable-logging",
 		"build:ui:dev": "webpack --display-error-details",
+		"set:local:windows:debug": "local-debug.reg",
 		"build:windows:service":
 			"dotnet publish ../EveHQ-NG.sln --runtime win-x64 --configuration Debug --self-contained",
 		"build:windows:copyservice":
