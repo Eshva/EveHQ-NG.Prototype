@@ -42,6 +42,8 @@ namespace EveHQ.NG.WebApi.Infrastructure
 		private void RegisterServicesOverridingOnesOfAspDotNetCore(ContainerBuilder builder)
 		{
 			builder.RegisterType<SsoAuthenticator>().As<IOAuthAuthenticator>().SingleInstance();
+			builder.RegisterType<PrototypeAuthenticationSecretsStorage>().As<IAuthenticationSecretsStorage>().SingleInstance();
+			builder.RegisterType<PrototypeTokenStorage>().As<ITokenStorage>().SingleInstance();
 		}
 	}
 }

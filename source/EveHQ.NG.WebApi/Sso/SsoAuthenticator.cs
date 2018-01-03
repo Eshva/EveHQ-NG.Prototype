@@ -6,6 +6,7 @@
 
 #region Usings
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
@@ -26,20 +27,31 @@ namespace EveHQ.NG.WebApi.Sso
 	[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global", Justification = "Constructed by IoC container.")]
 	public sealed class SsoAuthenticator : IOAuthAuthenticator
 	{
+		public SsoAuthenticator(IAuthenticationSecretsStorage authenticationSecretsStorage, ITokenStorage tokenStorage)
+		{
+			_authenticationSecretsStorage = authenticationSecretsStorage;
+			_tokenStorage = tokenStorage;
+		}
+
 		public string GetAuthenticationUri()
 		{
 			var uriBuilder = new StringBuilder("https://login.eveonline.com/oauth/authorize/");
 			uriBuilder.Append("?response_type=code")
-					.Append($"&redirect_uri={WebUtility.UrlEncode(RedirectUri)}")
-					.Append($"&client_id={ClientId}")
-					.Append($"&scope={WebUtility.UrlEncode(Scopes)}")
-					.Append($"&state={StateKey}");
+					.Append($"&redirect_uri={WebUtility.UrlEncode(_authenticationSecretsStorage.RedirectUri)}")
+					.Append($"&client_id={_authenticationSecretsStorage.ClientId}")
+					.Append($"&scope={WebUtility.UrlEncode(_authenticationSecretsStorage.Scopes)}")
+					.Append($"&state={_authenticationSecretsStorage.StateKey}");
 
 			return uriBuilder.ToString();
 		}
 
 		public async Task SetAuthorizationCodeAsync(string codeUri, string state)
 		{
+			if (!state.Equals(_authenticationSecretsStorage.StateKey, StringComparison.OrdinalIgnoreCase))
+			{
+				throw new ApplicationException("Authentication faild because state key was wrong. Seams like someone want to steal your credentials.");
+			}
+
 			var code = ExtractCodeFromCodeUri(codeUri);
 
 			using (var httpClient = new HttpClient())
@@ -48,8 +60,16 @@ namespace EveHQ.NG.WebApi.Sso
 				{
 					using (var responseMessage = await httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseContentRead))
 					{
+						if (!responseMessage.IsSuccessStatusCode)
+						{
+							throw new ApplicationException(
+								$"Authentication failed with code: {responseMessage.StatusCode} and message: '{responseMessage.ReasonPhrase}'.");
+						}
+
 						var jsonResponse = await responseMessage.Content.ReadAsStringAsync();
 						var authorizationResponse = JsonConvert.DeserializeObject<SsoAuthorizationResponse>(jsonResponse);
+						_tokenStorage.AccessToken = authorizationResponse.AccessToken;
+						_tokenStorage.RefreshToken = authorizationResponse.RefreshToken;
 					}
 				}
 			}
@@ -57,7 +77,7 @@ namespace EveHQ.NG.WebApi.Sso
 
 		private string ExtractCodeFromCodeUri(string codeUri)
 		{
-			var codeExtractionRegex = new Regex($@"^{RedirectUri}\?code=(?<code>.*)$");
+			var codeExtractionRegex = new Regex($@"^{_authenticationSecretsStorage.RedirectUri}\?code=(?<code>.*)$");
 			return codeExtractionRegex.Match(codeUri).Groups["code"].Value;
 		}
 
@@ -70,16 +90,14 @@ namespace EveHQ.NG.WebApi.Sso
 					new KeyValuePair<string, string>("code", code)
 				});
 			var message = new HttpRequestMessage(HttpMethod.Post, "https://login.eveonline.com/oauth/token") { Content = requestContent };
-			var authorizationIdAndSecret = Base64UrlTextEncoder.Encode(Encoding.ASCII.GetBytes($"{ClientId}:{ClientSecret}"));
+			var authorizationIdAndSecret =
+				Base64UrlTextEncoder.Encode(Encoding.ASCII.GetBytes($"{_authenticationSecretsStorage.ClientId}:{_authenticationSecretsStorage.ClientSecret}"));
 			message.Headers.Authorization = AuthenticationHeaderValue.Parse($"Basic {authorizationIdAndSecret}==");
 			message.Headers.Host = "login.eveonline.com";
 			return message;
 		}
 
-		private const string RedirectUri = "eveauth-evehq-ng://sso-auth/";
-		private const string ClientId = "9158bdcbc32a49e29044be4266b029dd";
-		private const string ClientSecret = "SJb4jaOUHbVm3KSrrPsJKo82cmiYxvoXtlEIgu5R";
-		private const string Scopes = "esi-skills.read_skillqueue.v1";
-		private const string StateKey = "auth-state-key";
+		private readonly IAuthenticationSecretsStorage _authenticationSecretsStorage;
+		private readonly ITokenStorage _tokenStorage;
 	}
 }
