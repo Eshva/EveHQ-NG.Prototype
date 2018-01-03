@@ -22,8 +22,6 @@ try {
 				}
 
 				mainWindow.focus();
-				console.log('processArguments');
-				console.warn('processArgumentsprocessArguments');
 				processArguments(otherInstanceArguments);
 			}
 		});
