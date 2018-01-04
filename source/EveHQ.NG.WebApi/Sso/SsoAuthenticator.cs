@@ -49,30 +49,68 @@ namespace EveHQ.NG.WebApi.Sso
 		{
 			if (!state.Equals(_authenticationSecretsStorage.StateKey, StringComparison.OrdinalIgnoreCase))
 			{
-				throw new ApplicationException("Authentication faild because state key was wrong. Seams like someone want to steal your credentials.");
+				throw new ApplicationException("Authentication faild because state key was wrong. Seams like someone wants to steal your credentials.");
 			}
 
-			var code = ExtractCodeFromCodeUri(codeUri);
+			var authorizationCode = ExtractCodeFromCodeUri(codeUri);
 
 			using (var httpClient = new HttpClient())
 			{
-				using (var requestMessage = CreateAuthorizationRequest(code))
-				{
-					using (var responseMessage = await httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseContentRead))
-					{
-						if (!responseMessage.IsSuccessStatusCode)
-						{
-							throw new ApplicationException(
-								$"Authentication failed with code: {responseMessage.StatusCode} and message: '{responseMessage.ReasonPhrase}'.");
-						}
+				await GetTokens(httpClient, authorizationCode);
+				await GetCharacterInfo(httpClient);
 
-						var jsonResponse = await responseMessage.Content.ReadAsStringAsync();
-						var authorizationResponse = JsonConvert.DeserializeObject<SsoAuthorizationResponse>(jsonResponse);
-						_tokenStorage.AccessToken = authorizationResponse.AccessToken;
-						_tokenStorage.RefreshToken = authorizationResponse.RefreshToken;
-					}
+				Console.WriteLine($"Gotten tokens for character '{_tokenStorage.CharacterName}' with ID {_tokenStorage.CharacterId}.");
+			}
+		}
+
+		private async Task GetTokens(HttpClient httpClient, string authorizationCode)
+		{
+			using (var request = CreateAuthorizationRequest(authorizationCode))
+			{
+				using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead))
+				{
+					ValidateResponse(response);
+
+					var jsonResponse = await response.Content.ReadAsStringAsync();
+					var authorizationResponse = JsonConvert.DeserializeObject<SsoAuthorizationResponse>(jsonResponse);
+					_tokenStorage.AccessToken = authorizationResponse.AccessToken;
+					_tokenStorage.RefreshToken = authorizationResponse.RefreshToken;
 				}
 			}
+		}
+
+		private async Task GetCharacterInfo(HttpClient httpClient)
+		{
+			using (var request = CreateGetCharacterIdRequest())
+			{
+				using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead))
+				{
+					ValidateResponse(response);
+
+					var jsonResponse = await response.Content.ReadAsStringAsync();
+					var characterInfoResponse = JsonConvert.DeserializeObject<SsoAuthenticatedCharacterInfo>(jsonResponse);
+					_tokenStorage.CharacterId = characterInfoResponse.CharacterId;
+					_tokenStorage.CharacterName = characterInfoResponse.CharacterName;
+				}
+			}
+		}
+
+		private static void ValidateResponse(HttpResponseMessage response)
+		{
+			if (!response.IsSuccessStatusCode)
+			{
+				throw new ApplicationException(
+					$"Authentication failed with code: {response.StatusCode} and message: '{response.ReasonPhrase}'.");
+			}
+		}
+
+		private HttpRequestMessage CreateGetCharacterIdRequest()
+		{
+			var message = new HttpRequestMessage(HttpMethod.Get, "https://login.eveonline.com/oauth/verify");
+			message.Headers.Authorization = AuthenticationHeaderValue.Parse($"Bearer {_tokenStorage.AccessToken}");
+			message.Headers.Host = HostUri;
+
+			return message;
 		}
 
 		private string ExtractCodeFromCodeUri(string codeUri)
@@ -81,23 +119,25 @@ namespace EveHQ.NG.WebApi.Sso
 			return codeExtractionRegex.Match(codeUri).Groups["code"].Value;
 		}
 
-		private HttpRequestMessage CreateAuthorizationRequest(string code)
+		private HttpRequestMessage CreateAuthorizationRequest(string authorizationCode)
 		{
 			var requestContent = new FormUrlEncodedContent(
 				new[]
 				{
 					new KeyValuePair<string, string>("grant_type", "authorization_code"),
-					new KeyValuePair<string, string>("code", code)
+					new KeyValuePair<string, string>("code", authorizationCode)
 				});
 			var message = new HttpRequestMessage(HttpMethod.Post, "https://login.eveonline.com/oauth/token") { Content = requestContent };
 			var authorizationIdAndSecret =
-				Base64UrlTextEncoder.Encode(Encoding.ASCII.GetBytes($"{_authenticationSecretsStorage.ClientId}:{_authenticationSecretsStorage.ClientSecret}"));
+				Base64UrlTextEncoder.Encode(
+					Encoding.ASCII.GetBytes($"{_authenticationSecretsStorage.ClientId}:{_authenticationSecretsStorage.ClientSecret}"));
 			message.Headers.Authorization = AuthenticationHeaderValue.Parse($"Basic {authorizationIdAndSecret}==");
-			message.Headers.Host = "login.eveonline.com";
+			message.Headers.Host = HostUri;
 			return message;
 		}
 
 		private readonly IAuthenticationSecretsStorage _authenticationSecretsStorage;
 		private readonly ITokenStorage _tokenStorage;
+		private const string HostUri = "login.eveonline.com";
 	}
 }

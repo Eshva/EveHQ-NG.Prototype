@@ -11,5 +11,9 @@ namespace EveHQ.NG.WebApi.Sso
 		string AccessToken { get; set; }
 
 		string RefreshToken { get; set; }
+
+		ulong CharacterId { get; set; }
+
+		string CharacterName { get; set; }
 	}
 }
