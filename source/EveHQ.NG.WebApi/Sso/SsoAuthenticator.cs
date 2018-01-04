@@ -27,10 +27,14 @@ namespace EveHQ.NG.WebApi.Sso
 	[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global", Justification = "Constructed by IoC container.")]
 	public sealed class SsoAuthenticator : IOAuthAuthenticator
 	{
-		public SsoAuthenticator(IAuthenticationSecretsStorage authenticationSecretsStorage, ITokenStorage tokenStorage)
+		public SsoAuthenticator(
+			IAuthenticationSecretsStorage authenticationSecretsStorage,
+			ITokenStorage tokenStorage,
+			IAuthenticationNotificationService authenticationNotificationService)
 		{
 			_authenticationSecretsStorage = authenticationSecretsStorage;
 			_tokenStorage = tokenStorage;
+			_authenticationNotificationService = authenticationNotificationService;
 		}
 
 		public string GetAuthenticationUri()
@@ -60,7 +64,20 @@ namespace EveHQ.NG.WebApi.Sso
 				await GetCharacterInfo(httpClient);
 
 				Console.WriteLine($"Gotten tokens for character '{_tokenStorage.CharacterName}' with ID {_tokenStorage.CharacterId}.");
+				NotifyClientsAboutCharacterChanged();
 			}
+		}
+
+		public void Logout()
+		{
+			Console.WriteLine($"Logged out character '{_tokenStorage.CharacterName}' with ID {_tokenStorage.CharacterId}.");
+
+			_tokenStorage.CharacterId = 0;
+			_tokenStorage.CharacterName = string.Empty;
+			_tokenStorage.AccessToken = string.Empty;
+			_tokenStorage.RefreshToken = string.Empty;
+
+			NotifyClientsAboutCharacterChanged();
 		}
 
 		private async Task GetTokens(HttpClient httpClient, string authorizationCode)
@@ -136,8 +153,12 @@ namespace EveHQ.NG.WebApi.Sso
 			return message;
 		}
 
+		private void NotifyClientsAboutCharacterChanged() =>
+			_authenticationNotificationService.NotifyAboutLoginStatusChanged(_tokenStorage.CharacterId);
+
 		private readonly IAuthenticationSecretsStorage _authenticationSecretsStorage;
 		private readonly ITokenStorage _tokenStorage;
+		private readonly IAuthenticationNotificationService _authenticationNotificationService;
 		private const string HostUri = "login.eveonline.com";
 	}
 }

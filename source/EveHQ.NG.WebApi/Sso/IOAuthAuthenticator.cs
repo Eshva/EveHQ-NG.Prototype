@@ -18,5 +18,7 @@ namespace EveHQ.NG.WebApi.Sso
 		string GetAuthenticationUri();
 
 		Task SetAuthorizationCodeAsync(string codeUri, string state);
+
+		void Logout();
 	}
 }

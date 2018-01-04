@@ -10,11 +10,16 @@ import { HomeComponent } from './components/home/home.component';
 import { AppRoutingModule } from './app-routing.module';
 import { ElectronService } from './providers/electron.service';
 import { ApiService } from './providers/api.service';
+import { LoginPageComponent } from './login-page/login-page.component';
+import { CurrentCharacterService } from './services/current-character.service';
+import { CharacterInfoPageComponent } from './character-info-page/character-info-page.component';
 
 @NgModule({
 	declarations: [
 		AppComponent,
-		HomeComponent
+		HomeComponent,
+		LoginPageComponent,
+		CharacterInfoPageComponent
 	],
 	imports: [
 		BrowserModule,
@@ -24,7 +29,8 @@ import { ApiService } from './providers/api.service';
 	],
 	providers: [
 		ElectronService,
-		ApiService
+		ApiService,
+		CurrentCharacterService
 	],
 	bootstrap: [AppComponent]
 })

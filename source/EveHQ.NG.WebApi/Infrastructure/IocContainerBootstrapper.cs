@@ -8,6 +8,7 @@
 
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using EveHQ.NG.WebApi.Characters;
 using EveHQ.NG.WebApi.Sso;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -44,6 +45,9 @@ namespace EveHQ.NG.WebApi.Infrastructure
 			builder.RegisterType<SsoAuthenticator>().As<IOAuthAuthenticator>().SingleInstance();
 			builder.RegisterType<PrototypeAuthenticationSecretsStorage>().As<IAuthenticationSecretsStorage>().SingleInstance();
 			builder.RegisterType<PrototypeTokenStorage>().As<ITokenStorage>().SingleInstance();
+			builder.RegisterType<CachingCharacterInfoProvider>().As<ICharacterInfoProvider>().SingleInstance();
+			builder.RegisterType<EsiCharacterApi>().As<ICharactersApi>().SingleInstance();
+			builder.RegisterType<AuthenticationNotificationHub>().As<IAuthenticationNotificationService, AuthenticationNotificationHub>().SingleInstance();
 		}
 	}
 }

@@ -38,19 +38,19 @@
 		"component": {
 			"inlineStyle": false,
 			"inlineTemplate": false,
-			"spec": true
+			"spec": false
 		},
 		"directive": {
-			"spec": true
+			"spec": false
 		},
 		"module": {
 			"spec": false
 		},
 		"pipe": {
-			"spec": true
+			"spec": false
 		},
 		"service": {
-			"spec": true
+			"spec": false
 		}
 	}
 }

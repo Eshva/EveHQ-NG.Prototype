@@ -16,7 +16,7 @@ using Newtonsoft.Json.Serialization;
 
 namespace EveHQ.NG.WebApi
 {
-	[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global", Justification = "Constructed by ASP.NET Core")]
+	[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global", Justification = "Constructed by ASP.NET Core.")]
 	public class Startup
 	{
 		public Startup(IConfiguration configuration)
@@ -24,7 +24,7 @@ namespace EveHQ.NG.WebApi
 			Configuration = configuration;
 		}
 
-		[SuppressMessage("ReSharper", "MemberCanBePrivate.Global", Justification = "Used by ASP.NET Core")]
+		[SuppressMessage("ReSharper", "MemberCanBePrivate.Global", Justification = "Used by ASP.NET Core.")]
 		[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 		public IConfiguration Configuration { get; }
 
@@ -33,17 +33,20 @@ namespace EveHQ.NG.WebApi
 		{
 			// Add framework services.
 			services.AddMvc().AddJsonOptions(
-				options =>
-				{
-					//return json format with Camel Case
-					options.SerializerSettings.ContractResolver = new DefaultContractResolver();
-				});
+				options => options.SerializerSettings.ContractResolver = new DefaultContractResolver());
+
+			services.AddCors(
+				options => options.AddPolicy(
+					CorsPolicyName,
+					builder => builder.AllowAnyMethod().AllowAnyHeader().WithOrigins($"http://localhost:{SignalRPort}")));
+
+			services.AddSignalR();
 
 			_applicationContainer = new IocContainerBootstrapper().BuildContainer(services);
 			return new AutofacServiceProvider(_applicationContainer);
 		}
 
-		[SuppressMessage("ReSharper", "UnusedMember.Global", Justification = "Called by ASP.NET Core")]
+		[SuppressMessage("ReSharper", "UnusedMember.Global", Justification = "Called by ASP.NET Core.")]
 		public void Configure(
 			IApplicationBuilder applicationBuilder,
 			IHostingEnvironment hostingEnvironment,
@@ -54,10 +57,17 @@ namespace EveHQ.NG.WebApi
 				applicationBuilder.UseDeveloperExceptionPage();
 			}
 
+			applicationBuilder.UseCors(CorsPolicyName);
+			applicationBuilder.UseSignalR(routeBuilder => routeBuilder.MapHub<AuthenticationNotificationHub>(AuthenticationNotificationHubName));
 			applicationBuilder.UseMvc();
+
 			applicationLifetime.ApplicationStopped.Register(() => _applicationContainer.Dispose());
 		}
 
 		private IContainer _applicationContainer;
+
+		private const int SignalRPort = 5000;
+		private const string AuthenticationNotificationHubName = "authentication-notification";
+		private const string CorsPolicyName = "CorsPolicy";
 	}
 }

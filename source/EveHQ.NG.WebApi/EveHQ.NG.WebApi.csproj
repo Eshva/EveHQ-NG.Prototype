@@ -17,6 +17,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Folder Include="app\app\login-page\" />
+    <Folder Include="app\app\character-info-page\" />
+    <Folder Include="app\app\models\" />
+    <Folder Include="app\app\services\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
@@ -32,7 +36,9 @@
     <PackageReference Include="Autofac" Version="4.6.2" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.2.0" />
     <PackageReference Include="Microsoft.AspNetCore" Version="2.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Cors" Version="2.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-alpha2-final" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.0.4" />
   </ItemGroup>
 

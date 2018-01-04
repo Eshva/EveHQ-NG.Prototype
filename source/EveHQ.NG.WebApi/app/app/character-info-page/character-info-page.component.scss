@@ -1,0 +1,28 @@
+:host {
+	height: 100%;
+	width: 100%;
+	display: flex;
+
+	.info {
+		height: 100%;
+		width: 50%;
+		background-color: orangered;
+		display: flex;
+		flex-direction: column;
+
+		* {
+			margin-bottom: 10px;
+		}
+
+		button {
+			height: 25px;
+			width: 100px;
+		}
+	}
+
+	.learning-queue {
+		height: 100%;
+		width: 50%;
+		background-color: yellowgreen;
+	}
+}

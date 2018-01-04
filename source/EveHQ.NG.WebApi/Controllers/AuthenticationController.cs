@@ -36,6 +36,13 @@ namespace EveHQ.NG.WebApi.Controllers
 			return Ok();
 		}
 
+		[HttpPost("Logout")]
+		public IActionResult Logout()
+		{
+			_authenticator.Logout();
+			return Ok();
+		}
+
 		private readonly IOAuthAuthenticator _authenticator;
 	}
 }
