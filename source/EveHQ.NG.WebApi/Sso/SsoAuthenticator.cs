@@ -9,13 +9,14 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using EveHQ.NG.WebApi.Controllers;
+using EveHQ.NG.WebApi.Characters;
 using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
 
@@ -29,12 +30,12 @@ namespace EveHQ.NG.WebApi.Sso
 	{
 		public SsoAuthenticator(
 			IAuthenticationSecretsStorage authenticationSecretsStorage,
-			ITokenStorage tokenStorage,
-			IAuthenticationNotificationService authenticationNotificationService)
+			ICharactersApi charactersApi,
+			ILoggedInCharacterRepository loggedInCharacterRepository)
 		{
 			_authenticationSecretsStorage = authenticationSecretsStorage;
-			_tokenStorage = tokenStorage;
-			_authenticationNotificationService = authenticationNotificationService;
+			_charactersApi = charactersApi;
+			_loggedInCharacterRepository = loggedInCharacterRepository;
 		}
 
 		public string GetAuthenticationUri()
@@ -49,7 +50,7 @@ namespace EveHQ.NG.WebApi.Sso
 			return uriBuilder.ToString();
 		}
 
-		public async Task SetAuthorizationCodeAsync(string codeUri, string state)
+		public async Task AuthenticateCharacterWithAutharizationCode(string codeUri, string state)
 		{
 			if (!state.Equals(_authenticationSecretsStorage.StateKey, StringComparison.OrdinalIgnoreCase))
 			{
@@ -60,27 +61,26 @@ namespace EveHQ.NG.WebApi.Sso
 
 			using (var httpClient = new HttpClient())
 			{
-				await GetTokens(httpClient, authorizationCode);
-				await GetCharacterInfo(httpClient);
+				var tokens = await GetTokens(httpClient, authorizationCode);
+				var info = await GetCharacterInfo(httpClient, tokens.AccessToken);
+				await _charactersApi.GetPortraits(info);
 
-				Console.WriteLine($"Gotten tokens for character '{_tokenStorage.CharacterName}' with ID {_tokenStorage.CharacterId}.");
-				NotifyClientsAboutCharacterChanged();
+				var character = new Character { Information = info, Tokens = tokens };
+
+				_loggedInCharacterRepository.AddOrReplaceLoggedInCharacter(character);
+				Console.WriteLine($"Gotten tokens for character '{info.Name}' with ID {info.Id}.");
 			}
 		}
 
-		public void Logout()
+		public void Logout(ulong characterId)
 		{
-			Console.WriteLine($"Logged out character '{_tokenStorage.CharacterName}' with ID {_tokenStorage.CharacterId}.");
+			var character = _loggedInCharacterRepository.CharacterInfos.Single(info => info.Id == characterId);
+			Console.WriteLine($"Logged out character '{character.Name}' with ID {character.Id}.");
 
-			_tokenStorage.CharacterId = 0;
-			_tokenStorage.CharacterName = string.Empty;
-			_tokenStorage.AccessToken = string.Empty;
-			_tokenStorage.RefreshToken = string.Empty;
-
-			NotifyClientsAboutCharacterChanged();
+			_loggedInCharacterRepository.RemoveLoggedOutCharacter(characterId);
 		}
 
-		private async Task GetTokens(HttpClient httpClient, string authorizationCode)
+		private async Task<CharacterTokens> GetTokens(HttpClient httpClient, string authorizationCode)
 		{
 			using (var request = CreateAuthorizationRequest(authorizationCode))
 			{
@@ -90,15 +90,19 @@ namespace EveHQ.NG.WebApi.Sso
 
 					var jsonResponse = await response.Content.ReadAsStringAsync();
 					var authorizationResponse = JsonConvert.DeserializeObject<SsoAuthorizationResponse>(jsonResponse);
-					_tokenStorage.AccessToken = authorizationResponse.AccessToken;
-					_tokenStorage.RefreshToken = authorizationResponse.RefreshToken;
+					return new CharacterTokens
+							{
+								AccessToken = authorizationResponse.AccessToken,
+								RefreshToken = authorizationResponse.RefreshToken,
+								AccessTokenValidTill = DateTimeOffset.Now.AddSeconds(authorizationResponse.ExpirationTimeInSeconds)
+							};
 				}
 			}
 		}
 
-		private async Task GetCharacterInfo(HttpClient httpClient)
+		private async Task<CharacterInfo> GetCharacterInfo(HttpClient httpClient, string accessToken)
 		{
-			using (var request = CreateGetCharacterIdRequest())
+			using (var request = CreateGetCharacterIdRequest(accessToken))
 			{
 				using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead))
 				{
@@ -106,8 +110,8 @@ namespace EveHQ.NG.WebApi.Sso
 
 					var jsonResponse = await response.Content.ReadAsStringAsync();
 					var characterInfoResponse = JsonConvert.DeserializeObject<SsoAuthenticatedCharacterInfo>(jsonResponse);
-					_tokenStorage.CharacterId = characterInfoResponse.CharacterId;
-					_tokenStorage.CharacterName = characterInfoResponse.CharacterName;
+
+					return await _charactersApi.GetInfo(characterInfoResponse.CharacterId);
 				}
 			}
 		}
@@ -121,10 +125,10 @@ namespace EveHQ.NG.WebApi.Sso
 			}
 		}
 
-		private HttpRequestMessage CreateGetCharacterIdRequest()
+		private HttpRequestMessage CreateGetCharacterIdRequest(string accessToken)
 		{
 			var message = new HttpRequestMessage(HttpMethod.Get, "https://login.eveonline.com/oauth/verify");
-			message.Headers.Authorization = AuthenticationHeaderValue.Parse($"Bearer {_tokenStorage.AccessToken}");
+			message.Headers.Authorization = AuthenticationHeaderValue.Parse($"Bearer {accessToken}");
 			message.Headers.Host = HostUri;
 
 			return message;
@@ -153,12 +157,9 @@ namespace EveHQ.NG.WebApi.Sso
 			return message;
 		}
 
-		private void NotifyClientsAboutCharacterChanged() =>
-			_authenticationNotificationService.NotifyAboutLoginStatusChanged(_tokenStorage.CharacterId);
-
 		private readonly IAuthenticationSecretsStorage _authenticationSecretsStorage;
-		private readonly ITokenStorage _tokenStorage;
-		private readonly IAuthenticationNotificationService _authenticationNotificationService;
+		private readonly ICharactersApi _charactersApi;
+		private readonly ILoggedInCharacterRepository _loggedInCharacterRepository;
 		private const string HostUri = "login.eveonline.com";
 	}
 }

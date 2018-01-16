@@ -27,7 +27,6 @@
 		"length-zero-no-unit": true,
 		"time-min-milliseconds": 50,
 		"unit-blacklist": [
-			"px",
 			"em"
 		],
 		"unit-case": "lower",

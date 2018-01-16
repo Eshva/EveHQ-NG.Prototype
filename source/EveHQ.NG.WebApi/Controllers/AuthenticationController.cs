@@ -29,17 +29,17 @@ namespace EveHQ.NG.WebApi.Controllers
 			return Json(_authenticator.GetAuthenticationUri());
 		}
 
-		[HttpPost("SetAuthorizationCode")]
-		public async Task<IActionResult> SetAuthorizationCodeAsync([FromQuery] string codeUri, [FromQuery] string state)
+		[HttpPost("AuthenticatioWithCode")]
+		public async Task<IActionResult> AuthenticateCharacterWithAutharizationCode([FromQuery] string codeUri, [FromQuery] string state)
 		{
-			await _authenticator.SetAuthorizationCodeAsync(codeUri, state);
+			await _authenticator.AuthenticateCharacterWithAutharizationCode(codeUri, state);
 			return Ok();
 		}
 
-		[HttpPost("Logout")]
-		public IActionResult Logout()
+		[HttpPost("{characterId}/logout")]
+		public IActionResult Logout([FromRoute] ulong characterId)
 		{
-			_authenticator.Logout();
+			_authenticator.Logout(characterId);
 			return Ok();
 		}
 

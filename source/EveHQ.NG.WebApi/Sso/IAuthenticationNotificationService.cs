@@ -4,10 +4,18 @@
 // Автор: Mike Eshva (mike@eshva.ru)
 // Дата создания: 04.01.2018
 
+#region Usings
+
+using System.Collections.Generic;
+using EveHQ.NG.WebApi.Characters;
+
+#endregion
+
+
 namespace EveHQ.NG.WebApi.Sso
 {
 	public interface IAuthenticationNotificationService
 	{
-		void NotifyAboutLoginStatusChanged(ulong loggedInCharacterId);
+		void NotifyClientsAboutCharacterListChanged(IReadOnlyList<CharacterInfo> characters);
 	}
 }

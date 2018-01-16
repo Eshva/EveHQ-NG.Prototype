@@ -30,20 +30,20 @@ namespace EveHQ.NG.WebApi.Characters
 					{
 						var jsonResponse = await response.Content.ReadAsStringAsync();
 						var dto = JsonConvert.DeserializeObject<EsiCharacterInfo>(jsonResponse);
-						var result = new CharacterInfo(id, dto.Name, dto.BornOn);
+						var result = new CharacterInfo { Id = id, Name = dto.Name, BornOn = dto.BornOn };
 						return result;
 					}
 				}
 			}
 		}
 
-		public async Task GetPortrait(CharacterInfo characterInfo)
+		public async Task GetPortraits(CharacterInfo character)
 		{
 			using (var httpClient = new HttpClient())
 			{
 				using (var request = new HttpRequestMessage(
 					HttpMethod.Get,
-					$"https://esi.tech.ccp.is/latest/characters/{characterInfo.CharacterId}/portrait/?datasource=tranquility"))
+					$"https://esi.tech.ccp.is/latest/characters/{character.Id}/portrait/?datasource=tranquility"))
 				{
 					using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead))
 					{
@@ -51,14 +51,14 @@ namespace EveHQ.NG.WebApi.Characters
 							task =>
 							{
 								var dto = JsonConvert.DeserializeObject<EsiPortraitUris>(task.Result);
-								characterInfo.SetPortraitsUris(
+								character.PortraitUris =
 									new Dictionary<ImageSize, string>
 									{
 										{ ImageSize.Image64x64, dto.Image64x64Uri },
 										{ ImageSize.Image128x128, dto.Image128x128Uri },
 										{ ImageSize.Image256x256, dto.Image256x256Uri },
 										{ ImageSize.Image512x512, dto.Image512x512Uri }
-									});
+									};
 							});
 					}
 				}

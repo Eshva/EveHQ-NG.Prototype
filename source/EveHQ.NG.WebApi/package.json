@@ -52,9 +52,11 @@
     "@angular/platform-browser-dynamic": "4.4.3",
     "@angular/router": "4.4.3",
     "@aspnet/signalr-client": "^1.0.0-alpha2-final",
+    "@types/lodash": "4.14.92",
     "core-js": "2.4.1",
     "electron-reload": "1.2.2",
     "enhanced-resolve": "3.3.0",
+    "lodash": "4.17.4",
     "rxjs": "5.4.3",
     "zone.js": "0.8.17"
   },

@@ -6,7 +6,6 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 import { AppComponent } from './app.component';
-import { HomeComponent } from './components/home/home.component';
 import { AppRoutingModule } from './app-routing.module';
 import { ElectronService } from './providers/electron.service';
 import { ApiService } from './providers/api.service';
@@ -17,7 +16,6 @@ import { CharacterInfoPageComponent } from './character-info-page/character-info
 @NgModule({
 	declarations: [
 		AppComponent,
-		HomeComponent,
 		LoginPageComponent,
 		CharacterInfoPageComponent
 	],

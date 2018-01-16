@@ -6,7 +6,7 @@
 
 #region Usings
 
-using System.Threading.Tasks;
+using System.Linq;
 using EveHQ.NG.WebApi.Characters;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,21 +18,30 @@ namespace EveHQ.NG.WebApi.Controllers
 	[Route("api/[controller]")]
 	public sealed class CharactersController : Controller
 	{
-		public CharactersController(ICharacterInfoProvider characterInfoProvider)
+		public CharactersController(ILoggedInCharacterRepository loggedInCharacterRepository)
 		{
-			_characterInfoProvider = characterInfoProvider;
+			_loggedInCharacterRepository = loggedInCharacterRepository;
+		}
+
+		[HttpGet]
+		public IActionResult Get()
+		{
+			return Json(_loggedInCharacterRepository.CharacterInfos);
 		}
 
 		[HttpGet("{id}/info")]
-		public async Task<IActionResult> GetInfo([FromRoute] ulong id)
+		public IActionResult GetInfo([FromRoute] ulong id)
 		{
-			return Json(await _characterInfoProvider.GetInfo(id));
+			return Json(_loggedInCharacterRepository.CharacterInfos.Single(info => info.Id == id));
 		}
 
 		[HttpGet("{id}/portrait/{size?}")]
-		public async Task<IActionResult> GetPortrait([FromRoute] ulong id, [FromRoute] string size)
+		public IActionResult GetPortrait([FromRoute] ulong id, [FromRoute] string size)
 		{
-			return Json(await _characterInfoProvider.GetPortraitUri(id, ConvertImageSize(size)));
+			return Json(
+				_loggedInCharacterRepository.CharacterInfos
+											.Single(info => info.Id == id)
+											.PortraitUris[ConvertImageSize(size)]);
 		}
 
 		private ImageSize ConvertImageSize(string size, ImageSize defaultSize = ImageSize.Image512x512)
@@ -52,6 +61,6 @@ namespace EveHQ.NG.WebApi.Controllers
 			}
 		}
 
-		private readonly ICharacterInfoProvider _characterInfoProvider;
+		private readonly ILoggedInCharacterRepository _loggedInCharacterRepository;
 	}
 }

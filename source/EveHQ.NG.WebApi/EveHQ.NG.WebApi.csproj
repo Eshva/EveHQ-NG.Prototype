@@ -42,4 +42,16 @@
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.0.4" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="Core.SimpleRepository">
+      <HintPath>libs\Core.SimpleRepository.dll</HintPath>
+    </Reference>
+    <Reference Include="Core.SimpleRepository.Core">
+      <HintPath>libs\Core.SimpleRepository.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Core.SimpleRepository.FileSystem">
+      <HintPath>libs\Core.SimpleRepository.FileSystem.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

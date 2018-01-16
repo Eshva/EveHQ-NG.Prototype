@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 #endregion
 
 
-namespace EveHQ.NG.WebApi.Controllers
+namespace EveHQ.NG.WebApi.Sso
 {
 	public sealed class SsoAuthorizationResponse
 	{

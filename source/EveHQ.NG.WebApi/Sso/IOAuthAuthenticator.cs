@@ -17,8 +17,8 @@ namespace EveHQ.NG.WebApi.Sso
 	{
 		string GetAuthenticationUri();
 
-		Task SetAuthorizationCodeAsync(string codeUri, string state);
+		Task AuthenticateCharacterWithAutharizationCode(string codeUri, string state);
 
-		void Logout();
+		void Logout(ulong characterId);
 	}
 }

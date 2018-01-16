@@ -7,10 +7,13 @@
 #region Usings
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using EveHQ.NG.WebApi.Characters;
 using EveHQ.NG.WebApi.Sso;
 using Microsoft.AspNetCore.SignalR;
+using Newtonsoft.Json;
 
 #endregion
 
@@ -32,10 +35,11 @@ namespace EveHQ.NG.WebApi.Infrastructure
 			return base.OnConnectedAsync();
 		}
 
-		public void NotifyAboutLoginStatusChanged(ulong loggedInCharacterId)
+		public void NotifyClientsAboutCharacterListChanged(IReadOnlyList<CharacterInfo> characters)
 		{
-			Console.WriteLine($"Sending notification to clients of the hub with ID {_id}. New character ID logged in: {loggedInCharacterId}.");
-			Clients.All.InvokeAsync("LoggedInCharacterIdChanged", loggedInCharacterId);
+			Console.WriteLine(
+				$"Sending notification to clients of the hub with ID {_id}. Logged in characters: {JsonConvert.SerializeObject(characters)}.");
+			Clients.All.InvokeAsync("LoggedInCharacterListChanged", characters);
 		}
 
 		private readonly int _id;

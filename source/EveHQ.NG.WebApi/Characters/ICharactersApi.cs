@@ -13,6 +13,6 @@ namespace EveHQ.NG.WebApi.Characters
 	{
 		Task<CharacterInfo> GetInfo(ulong id);
 
-		Task GetPortrait(CharacterInfo characterInfo);
+		Task GetPortraits(CharacterInfo character);
 	}
 }

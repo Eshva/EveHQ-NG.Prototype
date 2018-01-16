@@ -156,7 +156,7 @@ function processArguments(otherInstanceArguments: string[]) {
 		const code = match[0];
 		const state = match[1];
 		const localAuthenticationServiceUrl =
-			`http://localhost:5000/api/authentication/setAuthorizationCode?codeUri=${code}&state=${state}`;
+			`http://localhost:5000/api/authentication/authenticatioWithCode?codeUri=${code}&state=${state}`;
 		const authenticationRequest = net.request({
 			url: localAuthenticationServiceUrl,
 			method: 'POST'

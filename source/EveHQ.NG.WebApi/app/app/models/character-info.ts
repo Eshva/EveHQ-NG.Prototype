@@ -1,7 +1,9 @@
 export class CharacterInfo {
-	public CharacterId: number;
+	public id: number;
 
-	public CharacterName: string;
+	public name: string;
 
-	public BornOn: Date;
+	public bornOn: Date;
+
+	public portraitUris: any;
 }

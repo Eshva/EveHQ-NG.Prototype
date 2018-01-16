@@ -1,8 +1,8 @@
 <div class="info">
 	<button (click)="logout()">Logout</button>
-	<img [src]="portraitUri"/>
-	<p>Name: {{characterInfo.CharacterName}}</p>
-	<p>ID: {{characterInfo.CharacterId}}</p>
-	<p>Born on: {{characterInfo.BornOn}}</p>
+	<img [src]="[portraitUri]"/>
+	<p>Name: {{currentCharacter.name}}</p>
+	<p>ID: {{currentCharacter.characterId}}</p>
+	<p>Born on: {{currentCharacter.bornOn}}</p>
 </div>
 <div class="learning-queue"></div>
