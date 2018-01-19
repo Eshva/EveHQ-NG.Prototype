@@ -33,7 +33,7 @@ namespace EveHQ.NG.WebApi
 		{
 			// Add framework services.
 			services.AddMvc().AddJsonOptions(
-				options => options.SerializerSettings.ContractResolver = new DefaultContractResolver());
+				options => options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver());
 
 			services.AddCors(
 				options => options.AddPolicy(

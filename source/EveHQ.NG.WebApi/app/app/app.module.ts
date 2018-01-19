@@ -12,12 +12,14 @@ import { ApiService } from './providers/api.service';
 import { LoginPageComponent } from './login-page/login-page.component';
 import { CurrentCharacterService } from './services/current-character.service';
 import { CharacterInfoPageComponent } from './character-info-page/character-info-page.component';
+import { RomanNumberPipe } from './services/roman-number.pipe';
 
 @NgModule({
 	declarations: [
 		AppComponent,
 		LoginPageComponent,
-		CharacterInfoPageComponent
+		CharacterInfoPageComponent,
+		RomanNumberPipe
 	],
 	imports: [
 		BrowserModule,

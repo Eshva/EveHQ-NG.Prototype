@@ -24,42 +24,10 @@ namespace EveHQ.NG.WebApi.Controllers
 		}
 
 		[HttpGet]
-		public IActionResult Get()
-		{
-			return Json(_loggedInCharacterRepository.CharacterInfos);
-		}
+		public IActionResult Get() => Json(_loggedInCharacterRepository.CharacterInfos);
 
 		[HttpGet("{id}/info")]
-		public IActionResult GetInfo([FromRoute] ulong id)
-		{
-			return Json(_loggedInCharacterRepository.CharacterInfos.Single(info => info.Id == id));
-		}
-
-		[HttpGet("{id}/portrait/{size?}")]
-		public IActionResult GetPortrait([FromRoute] ulong id, [FromRoute] string size)
-		{
-			return Json(
-				_loggedInCharacterRepository.CharacterInfos
-											.Single(info => info.Id == id)
-											.PortraitUris[ConvertImageSize(size)]);
-		}
-
-		private ImageSize ConvertImageSize(string size, ImageSize defaultSize = ImageSize.Image512x512)
-		{
-			switch (size)
-			{
-				case "64x64":
-					return ImageSize.Image64x64;
-				case "128x128":
-					return ImageSize.Image128x128;
-				case "256x256":
-					return ImageSize.Image256x256;
-				case "512x512":
-					return ImageSize.Image512x512;
-				default:
-					return defaultSize;
-			}
-		}
+		public IActionResult GetInfo([FromRoute] ulong id) => Json(_loggedInCharacterRepository.CharacterInfos.Single(info => info.Id == id));
 
 		private readonly ILoggedInCharacterRepository _loggedInCharacterRepository;
 	}

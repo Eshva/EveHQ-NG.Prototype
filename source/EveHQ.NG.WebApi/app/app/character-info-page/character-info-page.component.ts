@@ -1,56 +1,47 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs/Rx';
 import { CurrentCharacterService } from '../services/current-character.service';
 import { ApiService } from '../providers/api.service';
 import { CharacterInfo } from '../models/character-info';
-import * as _ from 'lodash';
 
 @Component({
 	selector: 'app-character-info-page',
 	templateUrl: './character-info-page.component.html',
 	styleUrls: ['./character-info-page.component.scss']
 })
-export class CharacterInfoPageComponent implements OnInit, OnDestroy {
+export class CharacterInfoPageComponent implements OnDestroy {
 	constructor(
 		private readonly api: ApiService,
 		private readonly currentCharacterService: CurrentCharacterService,
 		private readonly router: Router) {
-		console.warn(`CharacterInfoPageComponent.ngOnInit Current: ${JSON.stringify(this.currentCharacter)}`);
-		this.currentCharacter = this.currentCharacterService.currentCharacter;
-		if (this.currentCharacter) {
-			this.portraitUri = this.currentCharacter.portraitUris['Image512x512'];
-		}
-		else {
-			this.navigateToLoginPage();
-		}
+		this.setCurrentAndGoToLoginIfNotItNotPresent();
 
 		this.loggedInCharacterListChangedSubscription =
 			this.currentCharacterService.loggedInCharacterListChanged.subscribe(
 				(characters: CharacterInfo[]) => {
-					console.warn(`Character list changed. ${characters.length}`);
-					this.currentCharacter = this.currentCharacterService.currentCharacter;
-					if (!this.currentCharacter) {
-						this.navigateToLoginPage();
-					}
-					else {
-						this.portraitUri = this.currentCharacterService.currentCharacter
-											? this.currentCharacter.portraitUris['image512x512']
-											: '';
-					}
+					this.setCurrentAndGoToLoginIfNotItNotPresent();
 				},
 				error => console.error(`MMMM: ${error}`),
 				() => console.info('MMMM Complited.'));
 	}
 
-	public ngOnInit(): void {
-	}
-
 	public ngOnDestroy(): void {
-		console.warn(`CharacterInfoPageComponent.ngOnDestroy Current: ${JSON.stringify(this.currentCharacter)}`);
 		this.loggedInCharacterListChangedSubscription.unsubscribe();
 	}
 
+	private skills: any = [
+		{ name: 'Amarr Cruiser', level: 4 },
+		{ name: 'Amarr Cruiser', level: 5 },
+		{ name: 'Minmatar Frigate', level: 2 }
+	];
+
+	private setCurrentAndGoToLoginIfNotItNotPresent(): void {
+		this.currentCharacter = this.currentCharacterService.currentCharacter;
+		if (!this.currentCharacter) {
+			this.navigateToLoginPage();
+		}
+	}
 
 	private logout(): void {
 		if (!this.currentCharacter) {

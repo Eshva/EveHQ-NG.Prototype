@@ -1,8 +1,13 @@
 <div class="info">
-	<button (click)="logout()">Logout</button>
-	<img [src]="[portraitUri]"/>
+	<img class="portrait" [src]="currentCharacter.portrait512Uri" />
 	<p>Name: {{currentCharacter.name}}</p>
-	<p>ID: {{currentCharacter.characterId}}</p>
+	<p>ID: {{currentCharacter.id}}</p>
 	<p>Born on: {{currentCharacter.bornOn}}</p>
+	<button (click)="logout()">Logout</button>
 </div>
-<div class="learning-queue"></div>
+<div class="learning-queue">
+	<h1>Learning queue</h1>
+	<ul>
+		<li *ngFor="let skill of skills">{{skill.name}} {{skill.level | roman}}</li>
+	</ul>
+</div>

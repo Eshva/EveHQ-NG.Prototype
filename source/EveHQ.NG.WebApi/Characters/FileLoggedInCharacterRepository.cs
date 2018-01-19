@@ -62,7 +62,7 @@ namespace EveHQ.NG.WebApi.Characters
 			}
 		}
 
-		public void AddOrReplaceLoggedInCharacter(Character character)
+		public void AddOrReplaceCharacter(Character character)
 		{
 			lock (_loggedInCharactersSyncRoot)
 			{
@@ -79,7 +79,7 @@ namespace EveHQ.NG.WebApi.Characters
 			}
 		}
 
-		public void RemoveLoggedOutCharacter(ulong characterId)
+		public void RemoveCharacter(ulong characterId)
 		{
 			lock (_loggedInCharactersSyncRoot)
 			{

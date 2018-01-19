@@ -67,7 +67,7 @@ namespace EveHQ.NG.WebApi.Sso
 
 				var character = new Character { Information = info, Tokens = tokens };
 
-				_loggedInCharacterRepository.AddOrReplaceLoggedInCharacter(character);
+				_loggedInCharacterRepository.AddOrReplaceCharacter(character);
 				Console.WriteLine($"Gotten tokens for character '{info.Name}' with ID {info.Id}.");
 			}
 		}
@@ -77,7 +77,7 @@ namespace EveHQ.NG.WebApi.Sso
 			var character = _loggedInCharacterRepository.CharacterInfos.Single(info => info.Id == characterId);
 			Console.WriteLine($"Logged out character '{character.Name}' with ID {character.Id}.");
 
-			_loggedInCharacterRepository.RemoveLoggedOutCharacter(characterId);
+			_loggedInCharacterRepository.RemoveCharacter(characterId);
 		}
 
 		private async Task<CharacterTokens> GetTokens(HttpClient httpClient, string authorizationCode)

@@ -6,7 +6,6 @@
 
 #region Usings
 
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -51,14 +50,10 @@ namespace EveHQ.NG.WebApi.Characters
 							task =>
 							{
 								var dto = JsonConvert.DeserializeObject<EsiPortraitUris>(task.Result);
-								character.PortraitUris =
-									new Dictionary<ImageSize, string>
-									{
-										{ ImageSize.Image64x64, dto.Image64x64Uri },
-										{ ImageSize.Image128x128, dto.Image128x128Uri },
-										{ ImageSize.Image256x256, dto.Image256x256Uri },
-										{ ImageSize.Image512x512, dto.Image512x512Uri }
-									};
+								character.Portrait64Uri = dto.Image64x64Uri;
+								character.Portrait128Uri = dto.Image128x128Uri;
+								character.Portrait256Uri = dto.Image256x256Uri;
+								character.Portrait512Uri = dto.Image512x512Uri;
 							});
 					}
 				}

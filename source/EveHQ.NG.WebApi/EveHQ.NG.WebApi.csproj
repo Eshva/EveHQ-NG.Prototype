@@ -20,7 +20,6 @@
     <Folder Include="app\app\login-page\" />
     <Folder Include="app\app\character-info-page\" />
     <Folder Include="app\app\models\" />
-    <Folder Include="app\app\services\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 

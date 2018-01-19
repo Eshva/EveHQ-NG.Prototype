@@ -3,7 +3,6 @@ import { HubConnection } from '@aspnet/signalr-client';
 import { Subject } from 'rxjs/Rx';
 import { ApiService } from '../providers/api.service';
 import { CharacterInfo } from '../models/character-info';
-import * as _ from 'lodash';
 
 @Injectable()
 export class CurrentCharacterService {
@@ -31,29 +30,22 @@ export class CurrentCharacterService {
 			'LoggedInCharacterListChanged',
 			(loggedInCharacters: CharacterInfo[]) => {
 				this._characters = loggedInCharacters;
-				console.warn(`characters: ${JSON.stringify(loggedInCharacters)}`);
-				console.warn('1');
 				const foundCharacters = this._characters.filter(
 					(character: CharacterInfo) => {
 						return this.currentCharacter && character.id === this.currentCharacter.id;
 					});
-				console.warn('2');
 
 				if (foundCharacters.length === 0) {
 					this.currentCharacter = this._characters.length > 0 ? this._characters[0] : undefined;
 				}
-				console.warn('3');
 
 				this.loggedInCharacterListChanged.next(this._characters);
 			});
 	}
 
 	private getLoggedInCharacters(): void {
-		console.log('Loading logged in characters.');
 		this.api.get('http://localhost:5000/api/characters/').subscribe(
 			(characters: CharacterInfo[]) => {
-				console.log(`Gotten logged in characters: ${JSON.stringify(characters)}`);
-
 				this._characters = characters;
 				if (characters.length > 0) {
 					this.currentCharacter = characters[0];

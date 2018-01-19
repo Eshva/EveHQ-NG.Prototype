@@ -41,13 +41,15 @@
 			"spec": false
 		},
 		"directive": {
-			"spec": false
+			"spec": false,
+			"flat": true
 		},
 		"module": {
 			"spec": false
 		},
 		"pipe": {
-			"spec": false
+			"spec": false,
+			"flat": true
 		},
 		"service": {
 			"spec": false

@@ -19,8 +19,8 @@ namespace EveHQ.NG.WebApi.Characters
 
 		IReadOnlyList<Character> Characters { get; }
 
-		void AddOrReplaceLoggedInCharacter(Character character);
+		void AddOrReplaceCharacter(Character character);
 
-		void RemoveLoggedOutCharacter(ulong characterId);
+		void RemoveCharacter(ulong characterId);
 	}
 }

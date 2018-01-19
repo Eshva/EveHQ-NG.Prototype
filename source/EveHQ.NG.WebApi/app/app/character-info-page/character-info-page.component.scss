@@ -2,11 +2,12 @@
 	height: 100%;
 	width: 100%;
 	display: flex;
+	font-family: "Segoe UI", "Tahoma", "Geneva", "Verdana", sans-serif;
+	padding: 20px;
 
 	.info {
 		height: 100%;
 		width: 50%;
-		background-color: orangered;
 		display: flex;
 		flex-direction: column;
 
@@ -17,12 +18,31 @@
 		button {
 			height: 25px;
 			width: 100px;
+			margin-top: 20px;
+		}
+
+		.portrait {
+			width: 512px;
+			height: 512px;
 		}
 	}
 
 	.learning-queue {
 		height: 100%;
 		width: 50%;
-		background-color: yellowgreen;
+
+		h1 {
+			margin: 0;
+		}
+
+		ul {
+			list-style-type: none;
+			font-size: large;
+			padding: 0;
+
+			li {
+				margin-bottom: 20px;
+			}
+		}
 	}
 }

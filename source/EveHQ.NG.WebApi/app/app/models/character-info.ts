@@ -5,5 +5,11 @@ export class CharacterInfo {
 
 	public bornOn: Date;
 
-	public portraitUris: any;
+	public portrait64Uri: string;
+
+	public portrait128Uri: string;
+
+	public portrait256Uri: string;
+
+	public portrait512Uri: string;
 }

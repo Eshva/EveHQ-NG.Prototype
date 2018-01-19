@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs/Rx';
 import { ApiService } from '../providers/api.service';
@@ -12,19 +12,16 @@ declare var electron: any;
 	templateUrl: './login-page.component.html',
 	styleUrls: ['./login-page.component.scss']
 })
-export class LoginPageComponent implements OnInit, OnDestroy {
+export class LoginPageComponent implements OnDestroy {
 
 	constructor(
 		private readonly api: ApiService,
 		private readonly currentCharacterService: CurrentCharacterService,
 		private readonly router: Router) {
-		console.warn('LoginPageComponent.ngOnInit');
 		this.loggedInCharacterListChangedSubscription =
 			this.currentCharacterService.loggedInCharacterListChanged.subscribe(
 			(characters: CharacterInfo[]) => {
 				if (characters.length > 0) {
-					console.warn(`Navigate to character page. ${JSON.stringify(characters)}`);
-
 					this.router.navigate(['/character-info']);
 				}
 			},
@@ -32,11 +29,7 @@ export class LoginPageComponent implements OnInit, OnDestroy {
 			() => console.info('LLLL Complited.'));
 	}
 
-	public ngOnInit(): void {
-	}
-
 	public ngOnDestroy(): void {
-		console.warn(`LoginPageComponent.ngOnDestroy`);
 		this.loggedInCharacterListChangedSubscription.unsubscribe();
 	}
 

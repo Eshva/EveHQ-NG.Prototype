@@ -7,26 +7,28 @@
 #region Usings
 
 using System;
-using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Diagnostics.CodeAnalysis;
 
 #endregion
 
 
 namespace EveHQ.NG.WebApi.Characters
 {
+	[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global", Justification = "DTO")]
 	public sealed class CharacterInfo
 	{
-		[JsonProperty("id")]
 		public ulong Id { get; set; }
 
-		[JsonProperty("name")]
-		public string Name { get; set; } = "";
+		public string Name { get; set; }
 
-		[JsonProperty("bornOn")]
 		public DateTime BornOn { get; set; }
 
-		[JsonProperty("portraitUris")]
-		public Dictionary<ImageSize, string> PortraitUris { get; set; } = new Dictionary<ImageSize, string>();
+		public string Portrait64Uri { get; set; }
+
+		public string Portrait128Uri { get; set; }
+
+		public string Portrait256Uri { get; set; }
+
+		public string Portrait512Uri { get; set; }
 	}
 }
