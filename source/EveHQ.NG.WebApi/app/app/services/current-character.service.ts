@@ -21,10 +21,7 @@ export class CurrentCharacterService {
 	public loggedInCharacterListChanged: Subject<CharacterInfo[]>;
 
 	public getSkillQueue(id: number): Observable<SkillQueueItem[]> {
-		return this.api.get(`http://localhost:5000/api/characters/${id}/skillqueue`).map(data => {
-			console.warn(`getSkillQueue: ${JSON.stringify(data)}`);
-			return data as SkillQueueItem[];
-		});
+		return this.api.get(`http://localhost:5000/api/characters/${id}/skillqueue`).map(data => data as SkillQueueItem[]);
 	}
 
 	private createNotificator(): void {

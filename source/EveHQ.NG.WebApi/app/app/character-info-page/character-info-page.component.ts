@@ -39,14 +39,10 @@ export class CharacterInfoPageComponent implements OnDestroy {
 			this.navigateToLoginPage();
 		}
 
-		console.warn(`this.currentCharacter: ${JSON.stringify(this.currentCharacter)}`);
 		const id = ((this.currentCharacter) as CharacterInfo).id;
-		console.warn('1');
 		this.currentCharacterService.getSkillQueue(id).subscribe((skillQueueItems: SkillQueueItem[]) => {
-			console.warn(`skillQueueItems: ${JSON.stringify(skillQueueItems)}`);
 			return this.skills = skillQueueItems;
 		});
-		console.warn('2');
 	}
 
 	private logout(): void {
