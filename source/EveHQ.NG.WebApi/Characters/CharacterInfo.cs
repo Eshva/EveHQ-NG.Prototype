@@ -17,7 +17,7 @@ namespace EveHQ.NG.WebApi.Characters
 	[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global", Justification = "DTO")]
 	public sealed class CharacterInfo
 	{
-		public ulong Id { get; set; }
+		public uint Id { get; set; }
 
 		public string Name { get; set; }
 

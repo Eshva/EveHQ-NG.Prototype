@@ -4,15 +4,22 @@
 // Автор: Mike Eshva (mike@eshva.ru)
 // Дата создания: 04.01.2018
 
+#region Usings
+
+using System.Collections.Generic;
 using System.Threading.Tasks;
+
+#endregion
 
 
 namespace EveHQ.NG.WebApi.Characters
 {
 	public interface ICharactersApi
 	{
-		Task<CharacterInfo> GetInfo(ulong id);
+		Task<CharacterInfo> GetInfo(uint id);
 
-		Task GetPortraits(CharacterInfo character);
+		Task GetPortraits(Character character);
+
+		Task<IEnumerable<SkillQueueItem>> GetSkillQueue(Character character);
 	}
 }

@@ -7,6 +7,7 @@
 #region Usings
 
 using System.Threading.Tasks;
+using EveHQ.NG.WebApi.Characters;
 
 #endregion
 
@@ -17,8 +18,10 @@ namespace EveHQ.NG.WebApi.Sso
 	{
 		string GetAuthenticationUri();
 
-		Task AuthenticateCharacterWithAutharizationCode(string codeUri, string state);
+		Task<CharacterTokens> AuthenticateCharacterWithAutharizationCode(string codeUri, string state);
 
-		void Logout(ulong characterId);
+		Task RefreshTokens(CharacterTokens tokens);
+
+		void Logout(uint characterId);
 	}
 }

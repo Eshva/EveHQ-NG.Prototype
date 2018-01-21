@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HubConnection } from '@aspnet/signalr-client';
-import { Subject } from 'rxjs/Rx';
+import { Observable, Subject } from 'rxjs/Rx';
 import { ApiService } from '../providers/api.service';
 import { CharacterInfo } from '../models/character-info';
+import { SkillQueueItem } from '../models/skill-queue-item';
 
 @Injectable()
 export class CurrentCharacterService {
@@ -18,6 +19,13 @@ export class CurrentCharacterService {
 	public currentCharacter: CharacterInfo | undefined;
 
 	public loggedInCharacterListChanged: Subject<CharacterInfo[]>;
+
+	public getSkillQueue(id: number): Observable<SkillQueueItem[]> {
+		return this.api.get(`http://localhost:5000/api/characters/${id}/skillqueue`).map(data => {
+			console.warn(`getSkillQueue: ${JSON.stringify(data)}`);
+			return data as SkillQueueItem[];
+		});
+	}
 
 	private createNotificator(): void {
 		this.loggedInCharacterListChanged = new Subject();

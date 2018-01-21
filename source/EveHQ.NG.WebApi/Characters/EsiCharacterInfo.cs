@@ -38,6 +38,6 @@ namespace EveHQ.NG.WebApi.Characters
 		public string Description { get; set; }
 
 		[JsonProperty("corporation_id")]
-		public ulong CorporationId { get; set; }
+		public uint CorporationId { get; set; }
 	}
 }

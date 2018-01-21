@@ -6,7 +6,7 @@
 
 #region Usings
 
-using System.Linq;
+using System.Threading.Tasks;
 using EveHQ.NG.WebApi.Characters;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,17 +18,26 @@ namespace EveHQ.NG.WebApi.Controllers
 	[Route("api/[controller]")]
 	public sealed class CharactersController : Controller
 	{
-		public CharactersController(ILoggedInCharacterRepository loggedInCharacterRepository)
+		public CharactersController(
+			ILoggedInCharacterRepository characterRepository,
+			ICharactersApi charactersApi)
 		{
-			_loggedInCharacterRepository = loggedInCharacterRepository;
+			_characterRepository = characterRepository;
+			_charactersApi = charactersApi;
 		}
 
 		[HttpGet]
-		public IActionResult Get() => Json(_loggedInCharacterRepository.CharacterInfos);
+		public IActionResult Get() => Json(_characterRepository.CharacterInfos);
 
 		[HttpGet("{id}/info")]
-		public IActionResult GetInfo([FromRoute] ulong id) => Json(_loggedInCharacterRepository.CharacterInfos.Single(info => info.Id == id));
+		public IActionResult GetInfo([FromRoute] uint id) =>
+			Json(_characterRepository.GetCharacterById(id).Information);
 
-		private readonly ILoggedInCharacterRepository _loggedInCharacterRepository;
+		[HttpGet("{id}/skillqueue")]
+		public async Task<IActionResult> GetSkillQueue([FromRoute] uint id) =>
+			Json(await _charactersApi.GetSkillQueue(_characterRepository.GetCharacterById(id)));
+
+		private readonly ILoggedInCharacterRepository _characterRepository;
+		private readonly ICharactersApi _charactersApi;
 	}
 }

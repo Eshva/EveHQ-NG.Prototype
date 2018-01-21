@@ -17,7 +17,7 @@ namespace EveHQ.NG.WebApi.Sso
 	public sealed class SsoAuthenticatedCharacterInfo
 	{
 		[JsonProperty("CharacterID")]
-		public ulong CharacterId { get; set; }
+		public uint CharacterId { get; set; }
 
 		public string CharacterName { get; set; }
 

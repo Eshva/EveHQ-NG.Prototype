@@ -1,4 +1,4 @@
-import { app, BrowserWindow, screen, net, dialog } from 'electron';
+import { app, BrowserWindow, screen, net } from 'electron';
 import * as path from 'path';
 
 const os = require('os');
@@ -33,9 +33,17 @@ try {
 	// This method will be called when Electron has finished
 	// initialization and is ready to create browser windows.
 	// Some APIs can only be used after this event occurs.
-	app.on('ready',
+	app.on(
+		'ready',
 		() => {
 			startApi();
+
+			if (mainWindow == null) {
+				createMainWindow();
+				mainWindow.webContents.openDevTools();
+			}		
+
+			setServiceDefaults();
 		});
 
 	// Quit when all windows are closed.
@@ -70,19 +78,17 @@ finally {
 }
 
 function startApi() {
-	const childProcess = require('child_process').spawn;
+	try {
+		const childProcess = require('child_process').spawn;
 
-	//  run server
-	webApiProcess = childProcess(buildPathToWebApi());
-	webApiProcess.stdout.on('data',
-		(data: any) => {
-			console.log(`stdout: ${data}`);
-
-			if (mainWindow == null) {
-				createMainWindow();
-				mainWindow.webContents.openDevTools();
-			}
-		});
+		//  run server
+		webApiProcess = childProcess(buildPathToWebApi());
+		webApiProcess.stdout.on('data', (data: any) => console.log(`stdout: ${data}`));
+		webApiProcess.stderr.on('data', (data: any) => console.error(`stderr: ${data}`));
+	}
+	catch (error) {
+		console.error(`An error occured: ${error}`);
+	} 
 }
 
 function buildPathToWebApi(): string {
@@ -156,14 +162,15 @@ function processArguments(otherInstanceArguments: string[]) {
 		const code = match[0];
 		const state = match[1];
 		const localAuthenticationServiceUrl =
-			`http://localhost:5000/api/authentication/authenticatioWithCode?codeUri=${code}&state=${state}`;
+			`${serviceBaseUrl}/authentication/authenticatioWithCode?codeUri=${code}&state=${state}`;
 		const authenticationRequest = net.request({
 			url: localAuthenticationServiceUrl,
 			method: 'POST'
 		});
-		authenticationRequest.on('response',
+		authenticationRequest.on(
+			'response',
 			response => {
-				console.warn(`status of authentication call: ${response.statusCode}`);
+				console.warn(`Status of authentication call: ${response.statusCode}`);
 			});
 		authenticationRequest.end();
 	}
@@ -171,3 +178,28 @@ function processArguments(otherInstanceArguments: string[]) {
 		throw new Error('Bad format of authentication code replay.');
 	}
 }
+
+function setServiceDefaults() {
+	const settings = JSON.stringify({
+		applicationFolder: app.getAppPath(),
+		applicationDataFolder: app.getPath('appData'),
+		temporaryDataFolder: app.getPath('temp')
+	});
+
+	const setServiceDefaultsRequest = net.request({
+		url: `${serviceBaseUrl}/settings/setDefaults`,
+		method: 'POST'
+	});
+
+	setServiceDefaultsRequest.setHeader('Content-Type', 'application/json');
+	setServiceDefaultsRequest.write(settings);
+	setServiceDefaultsRequest.on(
+		'response',
+		response => {
+			console.warn(`Status of set defaults call: ${response.statusCode}`);
+		});
+	setServiceDefaultsRequest.end();
+
+}
+
+const serviceBaseUrl = 'http://localhost:5000/api';

@@ -6,7 +6,10 @@
 
 #region Usings
 
+using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -16,48 +19,105 @@ using Newtonsoft.Json;
 
 namespace EveHQ.NG.WebApi.Characters
 {
-	[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global", Justification = "Constructed by IoC container.")]
+	[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global", Justification = "Constructed by IoC-container.")]
 	public sealed class EsiCharacterApi : ICharactersApi
 	{
-		public async Task<CharacterInfo> GetInfo(ulong id)
+		public EsiCharacterApi(ICharactersApiUriProvider charactersApiUriProvider)
+		{
+			_charactersApiUriProvider = charactersApiUriProvider;
+		}
+
+		public async Task<CharacterInfo> GetInfo(uint id)
+		{
+			return await CallEsiWebService(
+				() => _charactersApiUriProvider.GetInfoUri(id),
+				HttpMethod.Get,
+				response => response.Content
+									.ReadAsStringAsync()
+									.ContinueWith(
+										task =>
+										{
+											var dto = JsonConvert.DeserializeObject<EsiCharacterInfo>(task.Result);
+											return new CharacterInfo { Id = id, Name = dto.Name, BornOn = dto.BornOn };
+										}));
+		}
+
+		public async Task GetPortraits(Character character)
+		{
+			await CallEsiWebService(
+				() => _charactersApiUriProvider.GetPortraitsUri(character),
+				HttpMethod.Get,
+				response => response.Content
+									.ReadAsStringAsync()
+									.ContinueWith(
+										task =>
+										{
+											var dto = JsonConvert.DeserializeObject<EsiPortraitUris>(task.Result);
+											character.Information.Portrait64Uri = dto.Image64x64Uri;
+											character.Information.Portrait128Uri = dto.Image128x128Uri;
+											character.Information.Portrait256Uri = dto.Image256x256Uri;
+											character.Information.Portrait512Uri = dto.Image512x512Uri;
+										}));
+		}
+
+		public async Task<IEnumerable<SkillQueueItem>> GetSkillQueue(Character character)
+		{
+			return await CallEsiWebService(
+				() => _charactersApiUriProvider.GetSkillQueueUri(character),
+				HttpMethod.Get,
+				response => response.Content
+									.ReadAsStringAsync()
+									.ContinueWith(task => JsonConvert.DeserializeObject<EsiSkillQueueItem[]>(task.Result).Select(MapSkillQueueItem)));
+		}
+
+		private static SkillQueueItem MapSkillQueueItem(EsiSkillQueueItem dto) =>
+			new SkillQueueItem
+			{
+				SkillId = dto.SkillId,
+				SkillName = $"Skill with ID {dto.SkillId}",
+				WillFinishOn = dto.WillFinishOn,
+				StartedOn = dto.StartedOn,
+				FinishedLevel = dto.FinishedLevel,
+				QueuePosition = dto.QueuePosition,
+				TrainingStartSkillPoints = dto.TrainingStartSkillPoints,
+				LevelEndSkillPoints = dto.LevelEndSkillPoints,
+				LevelStartSkillPoints = dto.LevelStartSkillPoints
+			};
+
+		private async Task<TResult> CallEsiWebService<TResult>(
+			Func<string> getUri,
+			HttpMethod httpMethod,
+			Func<HttpResponseMessage, Task<TResult>> prepareResult)
 		{
 			using (var httpClient = new HttpClient())
 			{
-				using (var request = new HttpRequestMessage(HttpMethod.Get, $"https://esi.tech.ccp.is/latest/characters/{id}/?datasource=tranquility"))
+				using (var request = new HttpRequestMessage(httpMethod, getUri()))
 				{
 					using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead))
 					{
-						var jsonResponse = await response.Content.ReadAsStringAsync();
-						var dto = JsonConvert.DeserializeObject<EsiCharacterInfo>(jsonResponse);
-						var result = new CharacterInfo { Id = id, Name = dto.Name, BornOn = dto.BornOn };
-						return result;
+						return await prepareResult(response);
 					}
 				}
 			}
 		}
 
-		public async Task GetPortraits(CharacterInfo character)
+		private async Task CallEsiWebService(
+			Func<string> getUri,
+			HttpMethod httpMethod,
+			Func<HttpResponseMessage, Task> prepareResult)
 		{
 			using (var httpClient = new HttpClient())
 			{
-				using (var request = new HttpRequestMessage(
-					HttpMethod.Get,
-					$"https://esi.tech.ccp.is/latest/characters/{character.Id}/portrait/?datasource=tranquility"))
+				using (var request = new HttpRequestMessage(httpMethod, getUri()))
 				{
 					using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead))
 					{
-						await response.Content.ReadAsStringAsync().ContinueWith(
-							task =>
-							{
-								var dto = JsonConvert.DeserializeObject<EsiPortraitUris>(task.Result);
-								character.Portrait64Uri = dto.Image64x64Uri;
-								character.Portrait128Uri = dto.Image128x128Uri;
-								character.Portrait256Uri = dto.Image256x256Uri;
-								character.Portrait512Uri = dto.Image512x512Uri;
-							});
+						await prepareResult(response);
 					}
 				}
 			}
 		}
+
+		private readonly ICharactersApiUriProvider _charactersApiUriProvider;
 	}
 }

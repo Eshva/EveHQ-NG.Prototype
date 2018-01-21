@@ -21,6 +21,8 @@ namespace EveHQ.NG.WebApi.Characters
 
 		void AddOrReplaceCharacter(Character character);
 
-		void RemoveCharacter(ulong characterId);
+		void RemoveCharacter(uint characterId);
+
+		Character GetCharacterById(uint characterId);
 	}
 }

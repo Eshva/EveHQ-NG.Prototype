@@ -6,6 +6,7 @@
 
 #region Usings
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
@@ -25,12 +26,13 @@ namespace EveHQ.NG.WebApi.Characters
 		public FileLoggedInCharacterRepository(IAuthenticationNotificationService authenticationNotificationService)
 		{
 			_authenticationNotificationService = authenticationNotificationService;
+
 			RepositoryConfiguration
 				.Persist<List<Character>>()
 				.WithTypeAlias("LoggedInCharactersWithTokens")
 				.FileSystemRepository(new JsonSerializer())
 				.UsePlainFileNames("xml")
-				.WithStoragePath(@"Z:\Temporary");
+				.WithStoragePath($"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}/EveHQ NG/Settings");
 
 			_repository = new Repository();
 
@@ -79,16 +81,18 @@ namespace EveHQ.NG.WebApi.Characters
 			}
 		}
 
-		public void RemoveCharacter(ulong characterId)
+		public void RemoveCharacter(uint characterId)
 		{
 			lock (_loggedInCharactersSyncRoot)
 			{
-				_characters.Remove(_characters.Single(character => character.Information.Id == characterId));
+				_characters.Remove(GetCharacterById(characterId));
 
 				SaveCharacters();
 				NotifyLoggedInCharacterListChanged();
 			}
 		}
+
+		public Character GetCharacterById(uint characterId) => _characters.Single(character => character.Information.Id == characterId);
 
 		private void SaveCharacters()
 		{

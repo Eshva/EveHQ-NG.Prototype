@@ -48,6 +48,8 @@ namespace EveHQ.NG.WebApi.Infrastructure
 			builder.RegisterType<AuthenticationNotificationHub>()
 					.As<IAuthenticationNotificationService, AuthenticationNotificationHub>().SingleInstance();
 			builder.RegisterType<FileLoggedInCharacterRepository>().As<ILoggedInCharacterRepository>().SingleInstance();
+			builder.RegisterType<ApplicationSettings>().AsSelf().SingleInstance();
+			builder.RegisterType<CharactersApiUriProvider>().As<ICharactersApiUriProvider>().SingleInstance();
 		}
 	}
 }

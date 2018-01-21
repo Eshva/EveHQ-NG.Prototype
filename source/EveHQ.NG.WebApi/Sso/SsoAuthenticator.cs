@@ -30,11 +30,9 @@ namespace EveHQ.NG.WebApi.Sso
 	{
 		public SsoAuthenticator(
 			IAuthenticationSecretsStorage authenticationSecretsStorage,
-			ICharactersApi charactersApi,
 			ILoggedInCharacterRepository loggedInCharacterRepository)
 		{
 			_authenticationSecretsStorage = authenticationSecretsStorage;
-			_charactersApi = charactersApi;
 			_loggedInCharacterRepository = loggedInCharacterRepository;
 		}
 
@@ -50,7 +48,7 @@ namespace EveHQ.NG.WebApi.Sso
 			return uriBuilder.ToString();
 		}
 
-		public async Task AuthenticateCharacterWithAutharizationCode(string codeUri, string state)
+		public async Task<CharacterTokens> AuthenticateCharacterWithAutharizationCode(string codeUri, string state)
 		{
 			if (!state.Equals(_authenticationSecretsStorage.StateKey, StringComparison.OrdinalIgnoreCase))
 			{
@@ -61,18 +59,31 @@ namespace EveHQ.NG.WebApi.Sso
 
 			using (var httpClient = new HttpClient())
 			{
-				var tokens = await GetTokens(httpClient, authorizationCode);
-				var info = await GetCharacterInfo(httpClient, tokens.AccessToken);
-				await _charactersApi.GetPortraits(info);
-
-				var character = new Character { Information = info, Tokens = tokens };
-
-				_loggedInCharacterRepository.AddOrReplaceCharacter(character);
-				Console.WriteLine($"Gotten tokens for character '{info.Name}' with ID {info.Id}.");
+				return await GetTokens(httpClient, authorizationCode);
 			}
 		}
 
-		public void Logout(ulong characterId)
+		public async Task RefreshTokens(CharacterTokens tokens)
+		{
+			using (var httpClient = new HttpClient())
+			{
+				using (var request = CreateRefreshTokenRequest(tokens.RefreshToken))
+				{
+					using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead))
+					{
+						ValidateResponse(response);
+
+						var jsonResponse = await response.Content.ReadAsStringAsync();
+						var authorizationResponse = JsonConvert.DeserializeObject<SsoAuthorizationResponse>(jsonResponse);
+						tokens.AccessToken = authorizationResponse.AccessToken;
+						tokens.RefreshToken = authorizationResponse.RefreshToken;
+						tokens.AccessTokenValidTill = DateTimeOffset.Now.AddSeconds(authorizationResponse.ExpirationTimeInSeconds);
+					}
+				}
+			}
+		}
+
+		public void Logout(uint characterId)
 		{
 			var character = _loggedInCharacterRepository.CharacterInfos.Single(info => info.Id == characterId);
 			Console.WriteLine($"Logged out character '{character.Name}' with ID {character.Id}.");
@@ -100,22 +111,6 @@ namespace EveHQ.NG.WebApi.Sso
 			}
 		}
 
-		private async Task<CharacterInfo> GetCharacterInfo(HttpClient httpClient, string accessToken)
-		{
-			using (var request = CreateGetCharacterIdRequest(accessToken))
-			{
-				using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead))
-				{
-					ValidateResponse(response);
-
-					var jsonResponse = await response.Content.ReadAsStringAsync();
-					var characterInfoResponse = JsonConvert.DeserializeObject<SsoAuthenticatedCharacterInfo>(jsonResponse);
-
-					return await _charactersApi.GetInfo(characterInfoResponse.CharacterId);
-				}
-			}
-		}
-
 		private static void ValidateResponse(HttpResponseMessage response)
 		{
 			if (!response.IsSuccessStatusCode)
@@ -123,15 +118,6 @@ namespace EveHQ.NG.WebApi.Sso
 				throw new ApplicationException(
 					$"Authentication failed with code: {response.StatusCode} and message: '{response.ReasonPhrase}'.");
 			}
-		}
-
-		private HttpRequestMessage CreateGetCharacterIdRequest(string accessToken)
-		{
-			var message = new HttpRequestMessage(HttpMethod.Get, "https://login.eveonline.com/oauth/verify");
-			message.Headers.Authorization = AuthenticationHeaderValue.Parse($"Bearer {accessToken}");
-			message.Headers.Host = HostUri;
-
-			return message;
 		}
 
 		private string ExtractCodeFromCodeUri(string codeUri)
@@ -142,12 +128,27 @@ namespace EveHQ.NG.WebApi.Sso
 
 		private HttpRequestMessage CreateAuthorizationRequest(string authorizationCode)
 		{
-			var requestContent = new FormUrlEncodedContent(
-				new[]
-				{
-					new KeyValuePair<string, string>("grant_type", "authorization_code"),
-					new KeyValuePair<string, string>("code", authorizationCode)
-				});
+			return CreateTokenRequest(
+				() => new[]
+					{
+						new KeyValuePair<string, string>("grant_type", "authorization_code"),
+						new KeyValuePair<string, string>("code", authorizationCode)
+					});
+		}
+
+		private HttpRequestMessage CreateRefreshTokenRequest(string refreshToken)
+		{
+			return CreateTokenRequest(
+				() => new[]
+					{
+						new KeyValuePair<string, string>("grant_type", "refresh_token"),
+						new KeyValuePair<string, string>("refresh_token", refreshToken)
+					});
+		}
+
+		private HttpRequestMessage CreateTokenRequest(Func<IEnumerable<KeyValuePair<string, string>>> getRequestParameters)
+		{
+			var requestContent = new FormUrlEncodedContent(getRequestParameters());
 			var message = new HttpRequestMessage(HttpMethod.Post, "https://login.eveonline.com/oauth/token") { Content = requestContent };
 			var authorizationIdAndSecret =
 				Base64UrlTextEncoder.Encode(
@@ -158,7 +159,6 @@ namespace EveHQ.NG.WebApi.Sso
 		}
 
 		private readonly IAuthenticationSecretsStorage _authenticationSecretsStorage;
-		private readonly ICharactersApi _charactersApi;
 		private readonly ILoggedInCharacterRepository _loggedInCharacterRepository;
 		private const string HostUri = "login.eveonline.com";
 	}
