@@ -42,14 +42,15 @@ namespace EveHQ.NG.WebApi.Infrastructure
 		/// </remarks>
 		private void RegisterServicesOverridingOnesOfAspDotNetCore(ContainerBuilder builder)
 		{
-			builder.RegisterType<SsoAuthenticator>().As<IOAuthAuthenticator>().SingleInstance();
+			builder.RegisterType<SsoAuthenticator>().As<IOAuthAuthenticator>().InstancePerDependency();
 			builder.RegisterType<PrototypeAuthenticationSecretsStorage>().As<IAuthenticationSecretsStorage>().SingleInstance();
-			builder.RegisterType<EsiCharacterApi>().As<ICharactersApi>().SingleInstance();
+			builder.RegisterType<EsiCharacterApi>().As<ICharactersApi>().InstancePerDependency();
 			builder.RegisterType<AuthenticationNotificationHub>()
 					.As<IAuthenticationNotificationService, AuthenticationNotificationHub>().SingleInstance();
 			builder.RegisterType<FileLoggedInCharacterRepository>().As<ILoggedInCharacterRepository>().SingleInstance();
 			builder.RegisterType<ApplicationSettings>().AsSelf().SingleInstance();
-			builder.RegisterType<CharactersApiUriProvider>().As<ICharactersApiUriProvider>().SingleInstance();
+			builder.RegisterType<CharactersApiUriProvider>().As<ICharactersApiUriProvider>().InstancePerDependency();
+			builder.RegisterType<HttpService>().As<IHttpService>().InstancePerDependency();
 		}
 	}
 }

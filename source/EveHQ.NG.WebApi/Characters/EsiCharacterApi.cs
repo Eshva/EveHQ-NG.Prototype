@@ -6,12 +6,12 @@
 
 #region Usings
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using EveHQ.NG.WebApi.Infrastructure;
 using Newtonsoft.Json;
 
 #endregion
@@ -22,102 +22,70 @@ namespace EveHQ.NG.WebApi.Characters
 	[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global", Justification = "Constructed by IoC-container.")]
 	public sealed class EsiCharacterApi : ICharactersApi
 	{
-		public EsiCharacterApi(ICharactersApiUriProvider charactersApiUriProvider)
+		public EsiCharacterApi(
+			ICharactersApiUriProvider charactersApiUriProvider,
+			IHttpService httpService)
 		{
 			_charactersApiUriProvider = charactersApiUriProvider;
+			_httpService = httpService;
 		}
 
 		public async Task<CharacterInfo> GetInfo(uint id)
 		{
-			return await CallEsiWebService(
-				() => _charactersApiUriProvider.GetInfoUri(id),
+			CharacterInfo PrepareResult(Task<string> task)
+			{
+				var dto = JsonConvert.DeserializeObject<EsiCharacterInfo>(task.Result);
+				return new CharacterInfo { Id = id, Name = dto.Name, BornOn = dto.BornOn };
+			}
+
+			return await _httpService.CallAsync(
 				HttpMethod.Get,
-				response => response.Content
-									.ReadAsStringAsync()
-									.ContinueWith(
-										task =>
-										{
-											var dto = JsonConvert.DeserializeObject<EsiCharacterInfo>(task.Result);
-											return new CharacterInfo { Id = id, Name = dto.Name, BornOn = dto.BornOn };
-										}));
+				() => _charactersApiUriProvider.GetInfoUri(id),
+				response => response.Content.ReadAsStringAsync().ContinueWith(PrepareResult));
 		}
 
 		public async Task GetPortraits(Character character)
 		{
-			await CallEsiWebService(
-				() => _charactersApiUriProvider.GetPortraitsUri(character),
+			void PrepareResult(Task<string> task)
+			{
+				var dto = JsonConvert.DeserializeObject<EsiPortraitUris>(task.Result);
+				character.Information.Portrait64Uri = dto.Image64x64Uri;
+				character.Information.Portrait128Uri = dto.Image128x128Uri;
+				character.Information.Portrait256Uri = dto.Image256x256Uri;
+				character.Information.Portrait512Uri = dto.Image512x512Uri;
+			}
+
+			await _httpService.CallAsync(
 				HttpMethod.Get,
-				response => response.Content
-									.ReadAsStringAsync()
-									.ContinueWith(
-										task =>
-										{
-											var dto = JsonConvert.DeserializeObject<EsiPortraitUris>(task.Result);
-											character.Information.Portrait64Uri = dto.Image64x64Uri;
-											character.Information.Portrait128Uri = dto.Image128x128Uri;
-											character.Information.Portrait256Uri = dto.Image256x256Uri;
-											character.Information.Portrait512Uri = dto.Image512x512Uri;
-										}));
+				() => _charactersApiUriProvider.GetPortraitsUri(character),
+				response => response.Content.ReadAsStringAsync().ContinueWith(PrepareResult));
 		}
 
 		public async Task<IEnumerable<SkillQueueItem>> GetSkillQueue(Character character)
 		{
-			return await CallEsiWebService(
-				() => _charactersApiUriProvider.GetSkillQueueUri(character),
+			SkillQueueItem MapSkillQueueItem(EsiSkillQueueItem dto) =>
+				new SkillQueueItem
+				{
+					SkillId = dto.SkillId,
+					SkillName = $"Skill with ID {dto.SkillId}",
+					WillFinishOn = dto.WillFinishOn,
+					StartedOn = dto.StartedOn,
+					FinishedLevel = dto.FinishedLevel,
+					QueuePosition = dto.QueuePosition,
+					TrainingStartSkillPoints = dto.TrainingStartSkillPoints,
+					LevelEndSkillPoints = dto.LevelEndSkillPoints,
+					LevelStartSkillPoints = dto.LevelStartSkillPoints
+				};
+
+			return await _httpService.CallAsync(
 				HttpMethod.Get,
+				() => _charactersApiUriProvider.GetSkillQueueUri(character),
 				response => response.Content
 									.ReadAsStringAsync()
 									.ContinueWith(task => JsonConvert.DeserializeObject<EsiSkillQueueItem[]>(task.Result).Select(MapSkillQueueItem)));
 		}
 
-		private static SkillQueueItem MapSkillQueueItem(EsiSkillQueueItem dto) =>
-			new SkillQueueItem
-			{
-				SkillId = dto.SkillId,
-				SkillName = $"Skill with ID {dto.SkillId}",
-				WillFinishOn = dto.WillFinishOn,
-				StartedOn = dto.StartedOn,
-				FinishedLevel = dto.FinishedLevel,
-				QueuePosition = dto.QueuePosition,
-				TrainingStartSkillPoints = dto.TrainingStartSkillPoints,
-				LevelEndSkillPoints = dto.LevelEndSkillPoints,
-				LevelStartSkillPoints = dto.LevelStartSkillPoints
-			};
-
-		private async Task<TResult> CallEsiWebService<TResult>(
-			Func<string> getUri,
-			HttpMethod httpMethod,
-			Func<HttpResponseMessage, Task<TResult>> prepareResult)
-		{
-			using (var httpClient = new HttpClient())
-			{
-				using (var request = new HttpRequestMessage(httpMethod, getUri()))
-				{
-					using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead))
-					{
-						return await prepareResult(response);
-					}
-				}
-			}
-		}
-
-		private async Task CallEsiWebService(
-			Func<string> getUri,
-			HttpMethod httpMethod,
-			Func<HttpResponseMessage, Task> prepareResult)
-		{
-			using (var httpClient = new HttpClient())
-			{
-				using (var request = new HttpRequestMessage(httpMethod, getUri()))
-				{
-					using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead))
-					{
-						await prepareResult(response);
-					}
-				}
-			}
-		}
-
 		private readonly ICharactersApiUriProvider _charactersApiUriProvider;
+		private readonly IHttpService _httpService;
 	}
 }
