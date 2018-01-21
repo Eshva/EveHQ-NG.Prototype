@@ -41,7 +41,7 @@ namespace EveHQ.NG.WebApi.Sso
 
 		public string GetAuthenticationUri()
 		{
-			var uriBuilder = new StringBuilder("https://login.eveonline.com/oauth/authorize/");
+			var uriBuilder = new StringBuilder($"https://{HostUri}/oauth/authorize/");
 			uriBuilder.Append("?response_type=code")
 					.Append($"&redirect_uri={WebUtility.UrlEncode(_authenticationSecretsStorage.RedirectUri)}")
 					.Append($"&client_id={_authenticationSecretsStorage.ClientId}")
