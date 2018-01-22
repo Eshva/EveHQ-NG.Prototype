@@ -6,6 +6,7 @@
 
 #region Usings
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -40,7 +41,7 @@ namespace EveHQ.NG.WebApi.Characters
 
 			return await _httpService.CallAsync(
 				HttpMethod.Get,
-				() => _charactersApiUriProvider.GetInfoUri(id),
+				_charactersApiUriProvider.GetInfoUri(id),
 				response => response.Content.ReadAsStringAsync().ContinueWith(PrepareResult));
 		}
 
@@ -57,7 +58,7 @@ namespace EveHQ.NG.WebApi.Characters
 
 			await _httpService.CallAsync(
 				HttpMethod.Get,
-				() => _charactersApiUriProvider.GetPortraitsUri(character),
+				_charactersApiUriProvider.GetPortraitsUri(character),
 				response => response.Content.ReadAsStringAsync().ContinueWith(PrepareResult));
 		}
 
@@ -77,9 +78,10 @@ namespace EveHQ.NG.WebApi.Characters
 					LevelStartSkillPoints = dto.LevelStartSkillPoints
 				};
 
+			Console.WriteLine("Getting skill queue...");
 			return await _httpService.CallAsync(
 				HttpMethod.Get,
-				() => _charactersApiUriProvider.GetSkillQueueUri(character),
+				_charactersApiUriProvider.GetSkillQueueUri(character),
 				response => response.Content
 									.ReadAsStringAsync()
 									.ContinueWith(task => JsonConvert.DeserializeObject<EsiSkillQueueItem[]>(task.Result).Select(MapSkillQueueItem)));

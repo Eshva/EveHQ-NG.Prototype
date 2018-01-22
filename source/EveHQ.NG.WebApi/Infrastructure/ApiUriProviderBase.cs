@@ -7,6 +7,7 @@
 #region Usings
 
 using System;
+using System.Threading.Tasks;
 using EveHQ.NG.WebApi.Characters;
 using EveHQ.NG.WebApi.Sso;
 
@@ -22,11 +23,11 @@ namespace EveHQ.NG.WebApi.Infrastructure
 			_authenticator = authenticator;
 		}
 
-		protected string GetActualAccessTokenForCharacter(CharacterTokens tokens)
+		protected async Task<string> GetActualAccessTokenForCharacterAsync(CharacterTokens tokens)
 		{
 			if (tokens.AccessTokenValidTill < DateTimeOffset.Now)
 			{
-				_authenticator.RefreshTokens(tokens);
+				await _authenticator.RefreshTokens(tokens);
 			}
 
 			return tokens.AccessToken;

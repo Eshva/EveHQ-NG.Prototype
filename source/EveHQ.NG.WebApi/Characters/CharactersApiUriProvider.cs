@@ -7,6 +7,7 @@
 #region Usings
 
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 using EveHQ.NG.WebApi.Infrastructure;
 using EveHQ.NG.WebApi.Sso;
 
@@ -23,14 +24,16 @@ namespace EveHQ.NG.WebApi.Characters
 			// TODO: Extract latest and tranquility as settings.
 		}
 
-		public string GetInfoUri(uint characterId) => $"{ApiUri}/{characterId}/?datasource=tranquility";
+		public async Task<string> GetInfoUri(uint characterId) =>
+			await new Task<string>(() => $"{ApiUri}/{characterId}/?datasource=tranquility");
 
-		public string GetPortraitsUri(Character character) => $"{ApiUri}/{character.Information.Id}/portrait/?datasource=tranquility";
+		public async Task<string> GetPortraitsUri(Character character) =>
+			await new Task<string>(() => $"{ApiUri}/{character.Information.Id}/portrait/?datasource=tranquility");
 
-		public string GetSkillQueueUri(Character character)
+		public async Task<string> GetSkillQueueUri(Character character)
 		{
 			var characterId = character.Information.Id;
-			var token = GetActualAccessTokenForCharacter(character.Tokens);
+			var token = await GetActualAccessTokenForCharacterAsync(character.Tokens);
 			return $"{ApiUri}/{characterId}/skillqueue/?datasource=tranquility;token={token}";
 		}
 

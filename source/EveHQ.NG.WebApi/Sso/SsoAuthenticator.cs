@@ -74,7 +74,6 @@ namespace EveHQ.NG.WebApi.Sso
 						{
 							AccessToken = response.AccessToken,
 							RefreshToken = response.RefreshToken,
-							// TODO: Add IClock service.
 							AccessTokenValidTill = DateTimeOffset.Now.AddSeconds(response.ExpirationTimeInSeconds)
 						};
 			}
@@ -91,6 +90,8 @@ namespace EveHQ.NG.WebApi.Sso
 
 		public async Task RefreshTokens(CharacterTokens tokens)
 		{
+			Console.WriteLine("Refreshing tokens...");
+
 			HttpRequestMessage CreateRefreshTokenRequest() =>
 				CreateTokenRequest(
 					() => new[]
@@ -104,7 +105,6 @@ namespace EveHQ.NG.WebApi.Sso
 				var response = JsonConvert.DeserializeObject<SsoAuthorizationResponse>(task.Result);
 				tokens.AccessToken = response.AccessToken;
 				tokens.RefreshToken = response.RefreshToken;
-				// TODO: Add IClock service.
 				tokens.AccessTokenValidTill = DateTimeOffset.Now.AddSeconds(response.ExpirationTimeInSeconds);
 			}
 

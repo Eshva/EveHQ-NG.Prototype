@@ -19,12 +19,12 @@ namespace EveHQ.NG.WebApi.Infrastructure
 	{
 		Task<TResult> CallAsync<TResult>(
 			HttpMethod httpMethod,
-			Func<string> getUri,
+			Task<string> getUri,
 			Func<HttpResponseMessage, Task<TResult>> prepareResult);
 
 		Task CallAsync(
 			HttpMethod httpMethod,
-			Func<string> getUri,
+			Task<string> getUri,
 			Func<HttpResponseMessage, Task> prepareResult);
 
 		Task<TResult> CallAsync<TResult>(

@@ -4,14 +4,21 @@
 // Автор: Mike Eshva (mike@eshva.ru)
 // Дата создания: 20.01.2018
 
+#region Usings
+
+using System.Threading.Tasks;
+
+#endregion
+
+
 namespace EveHQ.NG.WebApi.Characters
 {
 	public interface ICharactersApiUriProvider
 	{
-		string GetSkillQueueUri(Character character);
+		Task<string> GetSkillQueueUri(Character character);
 
-		string GetPortraitsUri(Character character);
+		Task<string> GetPortraitsUri(Character character);
 
-		string GetInfoUri(uint characterId);
+		Task<string> GetInfoUri(uint characterId);
 	}
 }
