@@ -17,8 +17,13 @@ using System.Threading.Tasks;
 namespace EveHQ.NG.WebApi.Infrastructure
 {
 	[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global", Justification = "Constracted by IoC-container.")]
-	public class HttpService : IHttpService
+	public class HttpService : IHttpService, IDisposable
 	{
+		public HttpService()
+		{
+			_httpClient = new HttpClient();
+		}
+
 		public async Task<TResult> CallAsync<TResult>(
 			HttpMethod httpMethod,
 			Func<string> getUri,
@@ -35,14 +40,12 @@ namespace EveHQ.NG.WebApi.Infrastructure
 			Func<HttpRequestMessage> createRequest,
 			Func<HttpResponseMessage, Task<TResult>> prepareResult)
 		{
-			using (var httpClient = new HttpClient())
+			ValidateNotDisposed();
+			using (var request = createRequest())
 			{
-				using (var request = createRequest())
+				using (var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead))
 				{
-					using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead))
-					{
-						return await prepareResult(response);
-					}
+					return await prepareResult(response);
 				}
 			}
 		}
@@ -51,16 +54,31 @@ namespace EveHQ.NG.WebApi.Infrastructure
 			Func<HttpRequestMessage> createRequest,
 			Func<HttpResponseMessage, Task> prepareResult)
 		{
-			using (var httpClient = new HttpClient())
+			ValidateNotDisposed();
+			using (var request = createRequest())
 			{
-				using (var request = createRequest())
+				using (var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead))
 				{
-					using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead))
-					{
-						await prepareResult(response);
-					}
+					await prepareResult(response);
 				}
 			}
 		}
+
+		public void Dispose()
+		{
+			_httpClient?.Dispose();
+			_disposed = true;
+		}
+
+		private void ValidateNotDisposed()
+		{
+			if (_disposed)
+			{
+				throw new InvalidOperationException("Object disposed.");
+			}
+		}
+
+		private bool _disposed;
+		private readonly HttpClient _httpClient;
 	}
 }

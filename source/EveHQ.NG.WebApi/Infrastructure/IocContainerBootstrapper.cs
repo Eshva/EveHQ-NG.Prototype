@@ -50,7 +50,7 @@ namespace EveHQ.NG.WebApi.Infrastructure
 			builder.RegisterType<FileLoggedInCharacterRepository>().As<ILoggedInCharacterRepository>().SingleInstance();
 			builder.RegisterType<ApplicationSettings>().AsSelf().SingleInstance();
 			builder.RegisterType<CharactersApiUriProvider>().As<ICharactersApiUriProvider>().InstancePerDependency();
-			builder.RegisterType<HttpService>().As<IHttpService>().InstancePerDependency();
+			builder.RegisterType<HttpService>().As<IHttpService>().SingleInstance();
 		}
 	}
 }
