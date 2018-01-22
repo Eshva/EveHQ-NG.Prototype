@@ -37,6 +37,7 @@ export class CharacterInfoPageComponent implements OnDestroy {
 		this.currentCharacter = this.currentCharacterService.currentCharacter;
 		if (!this.currentCharacter) {
 			this.navigateToLoginPage();
+			return;
 		}
 
 		const id = ((this.currentCharacter) as CharacterInfo).id;

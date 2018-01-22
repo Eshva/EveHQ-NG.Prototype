@@ -21,8 +21,9 @@ export class LoginPageComponent implements OnDestroy {
 		this.loggedInCharacterListChangedSubscription =
 			this.currentCharacterService.loggedInCharacterListChanged.subscribe(
 			(characters: CharacterInfo[]) => {
-				if (characters.length > 0) {
+				if (this.currentCharacterService.currentCharacter) {
 					this.router.navigate(['/character-info']);
+					return;
 				}
 			},
 			error => console.error(`LLLL: ${error}`),
