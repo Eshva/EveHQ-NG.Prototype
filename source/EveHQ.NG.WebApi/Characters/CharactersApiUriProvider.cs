@@ -19,7 +19,10 @@ namespace EveHQ.NG.WebApi.Characters
 	[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global", Justification = "Created by IoC-container.")]
 	public sealed class CharactersApiUriProvider : ApiUriProviderBase, ICharactersApiUriProvider
 	{
-		public CharactersApiUriProvider(IOAuthAuthenticator authenticator) : base(authenticator)
+		public CharactersApiUriProvider(
+			IOAuthAuthenticator authenticator,
+			IClock clock)
+			: base(authenticator, clock)
 		{
 			// TODO: Extract latest and tranquility as settings.
 		}

@@ -6,7 +6,6 @@
 
 #region Usings
 
-using System;
 using System.Threading.Tasks;
 using EveHQ.NG.WebApi.Characters;
 using EveHQ.NG.WebApi.Sso;
@@ -18,14 +17,17 @@ namespace EveHQ.NG.WebApi.Infrastructure
 {
 	public abstract class ApiUriProviderBase
 	{
-		protected ApiUriProviderBase(IOAuthAuthenticator authenticator)
+		protected ApiUriProviderBase(
+			IOAuthAuthenticator authenticator,
+			IClock clock)
 		{
 			_authenticator = authenticator;
+			_clock = clock;
 		}
 
 		protected async Task<string> GetActualAccessTokenForCharacterAsync(CharacterTokens tokens)
 		{
-			if (tokens.AccessTokenValidTill < DateTimeOffset.Now)
+			if (tokens.AccessTokenValidTill < _clock.UtcNow)
 			{
 				await _authenticator.RefreshTokens(tokens);
 			}
@@ -34,5 +36,6 @@ namespace EveHQ.NG.WebApi.Infrastructure
 		}
 
 		private readonly IOAuthAuthenticator _authenticator;
+		private readonly IClock _clock;
 	}
 }

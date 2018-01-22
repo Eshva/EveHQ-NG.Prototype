@@ -32,11 +32,13 @@ namespace EveHQ.NG.WebApi.Sso
 		public SsoAuthenticator(
 			IAuthenticationSecretsStorage authenticationSecretsStorage,
 			ILoggedInCharacterRepository loggedInCharacterRepository,
-			IHttpService httpService)
+			IHttpService httpService,
+			IClock clock)
 		{
 			_authenticationSecretsStorage = authenticationSecretsStorage;
 			_loggedInCharacterRepository = loggedInCharacterRepository;
 			_httpService = httpService;
+			_clock = clock;
 		}
 
 		public string GetAuthenticationUri()
@@ -74,7 +76,7 @@ namespace EveHQ.NG.WebApi.Sso
 						{
 							AccessToken = response.AccessToken,
 							RefreshToken = response.RefreshToken,
-							AccessTokenValidTill = DateTimeOffset.Now.AddSeconds(response.ExpirationTimeInSeconds)
+							AccessTokenValidTill = _clock.UtcNow.AddSeconds(response.ExpirationTimeInSeconds)
 						};
 			}
 
@@ -105,7 +107,7 @@ namespace EveHQ.NG.WebApi.Sso
 				var response = JsonConvert.DeserializeObject<SsoAuthorizationResponse>(task.Result);
 				tokens.AccessToken = response.AccessToken;
 				tokens.RefreshToken = response.RefreshToken;
-				tokens.AccessTokenValidTill = DateTimeOffset.Now.AddSeconds(response.ExpirationTimeInSeconds);
+				tokens.AccessTokenValidTill = _clock.UtcNow.AddSeconds(response.ExpirationTimeInSeconds);
 			}
 
 			await _httpService.CallAsync(
@@ -136,6 +138,7 @@ namespace EveHQ.NG.WebApi.Sso
 		private readonly IAuthenticationSecretsStorage _authenticationSecretsStorage;
 		private readonly ILoggedInCharacterRepository _loggedInCharacterRepository;
 		private readonly IHttpService _httpService;
+		private readonly IClock _clock;
 		private const string HostUri = "login.eveonline.com";
 	}
 }

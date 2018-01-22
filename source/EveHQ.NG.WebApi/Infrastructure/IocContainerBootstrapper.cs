@@ -51,6 +51,7 @@ namespace EveHQ.NG.WebApi.Infrastructure
 			builder.RegisterType<ApplicationSettings>().AsSelf().SingleInstance();
 			builder.RegisterType<CharactersApiUriProvider>().As<ICharactersApiUriProvider>().InstancePerDependency();
 			builder.RegisterType<HttpService>().As<IHttpService>().SingleInstance();
+			builder.RegisterType<SystemClock>().As<IClock>().InstancePerDependency();
 		}
 	}
 }
