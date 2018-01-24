@@ -28,10 +28,10 @@ namespace EveHQ.NG.WebApi.Characters
 		}
 
 		public async Task<string> GetInfoUri(uint characterId) =>
-			await new Task<string>(() => $"{ApiUri}/{characterId}/?datasource=tranquility");
+			await Task<string>.Factory.StartNew(() => $"{ApiUri}/{characterId}/?datasource=tranquility");
 
 		public async Task<string> GetPortraitsUri(Character character) =>
-			await new Task<string>(() => $"{ApiUri}/{character.Information.Id}/portrait/?datasource=tranquility");
+			await Task<string>.Factory.StartNew(() => $"{ApiUri}/{character.Information.Id}/portrait/?datasource=tranquility");
 
 		public async Task<string> GetSkillQueueUri(Character character)
 		{

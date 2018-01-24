@@ -1,15 +1,14 @@
 import { Injectable } from '@angular/core';
-import { Http, Headers, Response, URLSearchParams } from '@angular/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs/Rx';
 import 'rxjs/Rx';
 
 @Injectable()
 export class ApiService {
-	constructor(private readonly http: Http) { }
+	constructor(private readonly http: HttpClient) { }
 
-	public get(url: string, params: URLSearchParams = new URLSearchParams()): Observable<any> {
-		return this.http.get(url, { headers: this.headers, search: params })
-			.map((res: Response) => res.json());
+	public get(url: string, params: HttpParams = new HttpParams()): Observable<any> {
+		return this.http.get(url, { params });
 	}
 
 	public post(url: string, body: Object = {}): Observable<any> {
@@ -24,5 +23,5 @@ export class ApiService {
 		return this.http.delete(url, { headers: this.headers });
 	}
 
-	private readonly headers = new Headers({ 'Content-Type': 'application/json' });
+	private readonly headers = new HttpHeaders({ 'Content-Type': 'application/json' });
 }

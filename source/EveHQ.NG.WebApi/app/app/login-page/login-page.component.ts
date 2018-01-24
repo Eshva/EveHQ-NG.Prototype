@@ -1,7 +1,8 @@
 import { Component, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
+import { shell } from 'electron';
 import { Subscription } from 'rxjs/Rx';
-import { ApiService } from '../providers/api.service';
+import { ApiService } from '../services/api.service';
 import { CharacterInfo } from '../models/character-info';
 import { CurrentCharacterService } from '../services/current-character.service';
 
@@ -37,7 +38,7 @@ export class LoginPageComponent implements OnDestroy {
 	private login(): void {
 		this.api.get('http://localhost:5000/api/authentication/getAuthenticationUri')
 			.subscribe(authenticationUri => {
-				electron.shell.openExternal(authenticationUri);
+				shell.openExternal(authenticationUri);
 			});
 	}
 

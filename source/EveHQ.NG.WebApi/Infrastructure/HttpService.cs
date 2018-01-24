@@ -28,13 +28,13 @@ namespace EveHQ.NG.WebApi.Infrastructure
 			HttpMethod httpMethod,
 			Task<string> getUri,
 			Func<HttpResponseMessage, Task<TResult>> prepareResult) =>
-			await CallAsync(() => getUri.ContinueWith(task => new HttpRequestMessage(httpMethod, task.Result)).Result, prepareResult);
+			await CallAsync(() => new HttpRequestMessage(httpMethod, getUri.Result), prepareResult);
 
 		public async Task CallAsync(
 			HttpMethod httpMethod,
 			Task<string> getUri,
 			Func<HttpResponseMessage, Task> prepareResult) =>
-			await CallAsync(() => getUri.ContinueWith(task => new HttpRequestMessage(httpMethod, task.Result)).Result, prepareResult);
+			await CallAsync(() => new HttpRequestMessage(httpMethod, getUri.Result), prepareResult);
 
 		public async Task<TResult> CallAsync<TResult>(
 			Func<HttpRequestMessage> createRequest,

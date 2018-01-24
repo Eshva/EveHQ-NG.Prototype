@@ -23,7 +23,7 @@
 		"importHelpers": true,
 		"outDir": "../../compiled/temp/offline/out-tsc",
 		"declaration": false,
-		"allowJs": true,
+		"allowJs": false,
 		"paths": {
 			"environments": [
 				"environments"

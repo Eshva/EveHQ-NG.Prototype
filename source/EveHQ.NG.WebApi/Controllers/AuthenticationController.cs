@@ -11,6 +11,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using EveHQ.NG.WebApi.Characters;
+using EveHQ.NG.WebApi.Infrastructure;
 using EveHQ.NG.WebApi.Sso;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -26,33 +27,28 @@ namespace EveHQ.NG.WebApi.Controllers
 		public AuthenticationController(
 			IOAuthAuthenticator authenticator,
 			ICharactersApi charactersApi,
-			ILoggedInCharacterRepository loggedInCharacterRepository)
+			ILoggedInCharacterRepository loggedInCharacterRepository,
+			IHttpService httpService)
 		{
 			_authenticator = authenticator;
 			_charactersApi = charactersApi;
 			_loggedInCharacterRepository = loggedInCharacterRepository;
+			_httpService = httpService;
 		}
 
 		[HttpGet("GetAuthenticationUri")]
-		public IActionResult GetAuthenticationUri()
-		{
-			return Json(_authenticator.GetAuthenticationUri());
-		}
+		public IActionResult GetAuthenticationUri() => Json(_authenticator.GetAuthenticationUri());
 
 		[HttpPost("AuthenticatioWithCode")]
 		public async Task<IActionResult> AuthenticateCharacterWithAutharizationCode([FromQuery] string codeUri, [FromQuery] string state)
 		{
 			var tokens = await _authenticator.AuthenticateCharacterWithAutharizationCode(codeUri, state);
+			var information = await GetCharacterInfo(tokens.AccessToken);
+			var character = new Character { Information = information, Tokens = tokens };
+			await _charactersApi.GetPortraits(character);
 
-			using (var httpClient = new HttpClient())
-			{
-				var info = await GetCharacterInfo(httpClient, tokens.AccessToken);
-				var character = new Character { Information = info, Tokens = tokens };
-				await _charactersApi.GetPortraits(character);
-
-				_loggedInCharacterRepository.AddOrReplaceCharacter(character);
-				Console.WriteLine($"Gotten tokens for character '{info.Name}' with ID {info.Id}.");
-			}
+			_loggedInCharacterRepository.AddOrReplaceCharacter(character);
+			Console.WriteLine($"Gotten tokens for character '{character.Information.Name}' with ID {character.Information.Id}.");
 
 			return Ok();
 		}
@@ -64,43 +60,29 @@ namespace EveHQ.NG.WebApi.Controllers
 			return Ok();
 		}
 
-		private async Task<CharacterInfo> GetCharacterInfo(HttpClient httpClient, string accessToken)
+		private async Task<CharacterInfo> GetCharacterInfo(string accessToken)
 		{
-			using (var request = CreateGetCharacterIdRequest(accessToken))
+			HttpRequestMessage CreateGetCharacterIdRequest()
 			{
-				using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead))
-				{
-					ValidateResponse(response);
+				var message = new HttpRequestMessage(HttpMethod.Get, "https://login.eveonline.com/oauth/verify");
+				message.Headers.Authorization = AuthenticationHeaderValue.Parse($"Bearer {accessToken}");
+				message.Headers.Host = HostUri;
 
-					var jsonResponse = await response.Content.ReadAsStringAsync();
-					var characterInfoResponse = JsonConvert.DeserializeObject<SsoAuthenticatedCharacterInfo>(jsonResponse);
-
-					return await _charactersApi.GetInfo(characterInfoResponse.CharacterId);
-				}
+				return message;
 			}
-		}
 
-		private HttpRequestMessage CreateGetCharacterIdRequest(string accessToken)
-		{
-			var message = new HttpRequestMessage(HttpMethod.Get, "https://login.eveonline.com/oauth/verify");
-			message.Headers.Authorization = AuthenticationHeaderValue.Parse($"Bearer {accessToken}");
-			message.Headers.Host = HostUri;
-
-			return message;
-		}
-
-		private static void ValidateResponse(HttpResponseMessage response)
-		{
-			if (!response.IsSuccessStatusCode)
-			{
-				throw new ApplicationException(
-					$"Authentication failed with code: {response.StatusCode} and message: '{response.ReasonPhrase}'.");
-			}
+			var characterId = await _httpService.CallAsync(
+				CreateGetCharacterIdRequest,
+				response => response.Content
+									.ReadAsStringAsync()
+									.ContinueWith(task => JsonConvert.DeserializeObject<SsoAuthenticatedCharacterInfo>(task.Result).CharacterId));
+			return await _charactersApi.GetInfo(characterId);
 		}
 
 		private readonly IOAuthAuthenticator _authenticator;
 		private readonly ICharactersApi _charactersApi;
 		private readonly ILoggedInCharacterRepository _loggedInCharacterRepository;
+		private readonly IHttpService _httpService;
 		private const string HostUri = "login.eveonline.com";
 	}
 }

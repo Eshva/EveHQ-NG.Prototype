@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
-import { ElectronService } from './providers/electron.service';
+//import { ElectronService } from './providers/electron.service';
 
 @Component({
 	selector: 'app-root',
 	templateUrl: './app.component.html'
 })
 export class AppComponent {
+/*
 	constructor(private readonly electronService: ElectronService) {
 
 		if (electronService.isElectron()) {
@@ -19,4 +20,5 @@ export class AppComponent {
 			console.log('Mode web');
 		}
 	}
+*/
 }

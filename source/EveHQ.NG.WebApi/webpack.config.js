@@ -18,7 +18,7 @@ const entryPoints = ['inline', 'polyfills', 'sw-register', 'styles', 'vendor', '
 const baseHref = '';
 const deployUrl = '';
 
-const isProd = (process.env.NODE_ENV === 'production');
+const isProduction = process.env.NODE_ENV === 'production';
 
 //add all external css to be added in our index.html--> like as if it's .angular-cli.json
 const styles = [
@@ -162,7 +162,7 @@ function getPlugins() {
 			emitErrors: true
 		}));
 
-	if (isProd) {
+	if (isProduction) {
 		plugins.push(new HashedModuleIdsPlugin({
 			"hashFunction": 'md5',
 			"hashDigest": 'base64',
@@ -208,6 +208,29 @@ function getPlugins() {
 module.exports = {
 	"devtool": 'source-map',
 	'target': 'electron-renderer',
+	"externals": {
+		"electron": "require('electron')",
+		"buffer": "require('buffer')",
+		"child_process": "require('child_process')",
+		"crypto": "require('crypto')",
+		"events": "require('events')",
+		"fs": "require('fs')",
+		"http": "require('http')",
+		"https": "require('https')",
+		"assert": "require('assert')",
+		"dns": "require('dns')",
+		"net": "require('net')",
+		"os": "require('os')",
+		"path": "require('path')",
+		"querystring": "require('querystring')",
+		"readline": "require('readline')",
+		"repl": "require('repl')",
+		"stream": "require('stream')",
+		"string_decoder": "require('string_decoder')",
+		"url": "require('url')",
+		"util": "require('util')",
+		"zlib": "require('zlib')"
+	},
 	"resolve": {
 		"extensions": [
 			'.ts',
@@ -217,7 +240,7 @@ module.exports = {
 		],
 		"aliasFields": [],
 		"alias": { // WORKAROUND See. angular-cli/issues/5433
-			"environments": isProd
+			"environments": isProduction
 								? path.resolve(__dirname, 'app/environments/index.prod.ts')
 								: path.resolve(__dirname, 'app/environments/index.ts')
 		},
@@ -317,7 +340,6 @@ module.exports = {
 			}
 		]
 	},
-/*
 	"node": {
 		fs: 'empty',
 		global: true,
@@ -331,6 +353,5 @@ module.exports = {
 		__dirname: false,
 		__filename: false
 	},
-*/
 	"plugins": getPlugins()
 };
