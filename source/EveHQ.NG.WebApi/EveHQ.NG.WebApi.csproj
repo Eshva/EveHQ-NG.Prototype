@@ -4,24 +4,16 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
 	<RuntimeIdentifiers>win10-x64;osx-x64;linux-x64</RuntimeIdentifiers>
 	<TypeScriptToolsVersion>2.3</TypeScriptToolsVersion>
-	<BaseIntermediateOutputPath>..\bin\obj</BaseIntermediateOutputPath>
 	<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <OutputPath>..\bin\deb\core\</OutputPath>
+    <OutputPath>..\bin\debug\core\</OutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <OutputPath>..\bin\rel\core\</OutputPath>
+    <OutputPath>..\bin\release\core\</OutputPath>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Folder Include="app\app\login-page\" />
-    <Folder Include="app\app\character-info-page\" />
-    <Folder Include="app\app\models\" />
-    <Folder Include="wwwroot\" />
-  </ItemGroup>
 
   <PropertyGroup>
 	<TypeScriptCompileBlocked>True</TypeScriptCompileBlocked>

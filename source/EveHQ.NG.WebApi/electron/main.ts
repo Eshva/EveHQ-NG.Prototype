@@ -13,7 +13,6 @@ if (serve) {
 
 let mainWindow: Electron.BrowserWindow | null;
 try {
-
 	let isItSecondInstance = app.makeSingleInstance(
 		(otherInstanceArguments: string[], workingDirectory: string) => {
 			if (mainWindow) {
@@ -56,7 +55,7 @@ try {
 			}
 
 			console.log('exit...');
-			webApiProcess.kill();
+			stopApi();
 		});
 
 	app.on('activate',
@@ -78,6 +77,10 @@ finally {
 }
 
 function startApi() {
+	if (serve) {
+		return;
+	}
+
 	try {
 		const childProcess = require('child_process').spawn;
 
@@ -89,6 +92,14 @@ function startApi() {
 	catch (error) {
 		console.error(`An error occured: ${error}`);
 	} 
+}
+
+function stopApi() {
+	if (serve) {
+		return;
+	}
+
+	webApiProcess.kill();
 }
 
 function buildPathToWebApi(): string {
