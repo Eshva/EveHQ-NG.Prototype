@@ -7,7 +7,7 @@
 	"directories": {
 		"output": "../bin/release",
 		"app": "../bin/dist",
-		"buildResources": "build"
+		"buildResources": "./electron/build"
 	},
 	"artifactName": "${name}-${version}.${ext}",
 	"mac": {
@@ -25,7 +25,9 @@
 	"nsis": {
 		"perMachine": true,
 		"oneClick": false,
-		"allowToChangeInstallationDirectory": true
+		"allowToChangeInstallationDirectory": true,
+		"include": "electron/installer.nsh",
+		"installerIcon": "icon.ico"
 	},
 	"linux": {
 		"category": "Game;Utility;",

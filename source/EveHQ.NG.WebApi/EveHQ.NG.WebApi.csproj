@@ -54,4 +54,8 @@
 	  <Content Update="electron/**/*.*" CopyToPublishDirectory="Never" />
 	  <Content Update="app/**/*.*" CopyToPublishDirectory="Never" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="electron\build\" />
+	</ItemGroup>
 </Project>

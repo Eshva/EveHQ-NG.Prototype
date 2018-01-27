@@ -9,3 +9,8 @@
   WriteRegStr HKCR "eveauth-evehq-ng\shell\open" "" ""
   WriteRegStr HKCR "eveauth-evehq-ng\shell\Open\command" "" "$INSTDIR\${APP_EXECUTABLE_FILENAME} %1"
 !macroend
+
+!macro customUnInstall
+  DetailPrint "Remove eveauth-evehq-ng URI Handler"
+  DeleteRegKey HKCR "eveauth-evehq-ng"
+!macroend
