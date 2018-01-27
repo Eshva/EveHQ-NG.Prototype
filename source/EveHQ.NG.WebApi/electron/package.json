@@ -1,0 +1,25 @@
+{
+	"name": "evehq-ng",
+	"productName": "EveHQ NG",
+	"version": "0.0.1",
+	"description": "EVE Online professions assistant tool",
+	"homepage": "https://ng.evehq.co",
+	"author": {
+		"name": "EveHQ Team",
+		"email": "mike@eshva.ru"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Eshva/EveHQ-NG.Prototype.git"
+	},
+	"bugs": {
+		"url": "https://github.com/Eshva/EveHQ-NG.Prototype/issues"
+	},
+	"keywords": [
+		"eve online",
+		"tool"
+	],
+	"license": "SEE LICENSE IN LICENSE.md",
+	"main": "main.js",
+	"private": true
+}

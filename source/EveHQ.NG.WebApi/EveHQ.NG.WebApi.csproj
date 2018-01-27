@@ -45,4 +45,13 @@
     </Reference>
   </ItemGroup>
 
+	<ItemGroup>
+	  <Content Update=".angular-cli.json" CopyToPublishDirectory="Never" />
+	  <Content Update=".stylelintrc.json" CopyToPublishDirectory="Never" />
+	  <Content Update="electron-builder.json" CopyToPublishDirectory="Never" />
+	  <Content Update="package.json" CopyToPublishDirectory="Never" />
+	  <Content Update="package-lock.json" CopyToPublishDirectory="Never" />
+	  <Content Update="electron/**/*.*" CopyToPublishDirectory="Never" />
+	  <Content Update="app/**/*.*" CopyToPublishDirectory="Never" />
+	</ItemGroup>
 </Project>
