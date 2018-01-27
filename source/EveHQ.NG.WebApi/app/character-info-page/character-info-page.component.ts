@@ -1,10 +1,10 @@
 import { Component, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs/Rx';
-import { CurrentCharacterService } from '../services/current-character.service';
-import { ApiService } from '../services/api.service';
-import { CharacterInfo } from '../models/character-info';
-import { SkillQueueItem } from '../models/skill-queue-item';
+import { CurrentCharacterService } from 'services/current-character.service';
+import { ApiService } from 'services/api.service';
+import { CharacterInfo } from 'models/character-info';
+import { SkillQueueItem } from 'models/skill-queue-item';
 
 @Component({
 	selector: 'app-character-info-page',

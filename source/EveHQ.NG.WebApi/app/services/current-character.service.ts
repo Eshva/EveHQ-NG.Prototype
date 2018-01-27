@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HubConnection } from '@aspnet/signalr-client';
 import { Observable, Subject } from 'rxjs/Rx';
-import { ApiService } from '../services/api.service';
-import { CharacterInfo } from '../models/character-info';
-import { SkillQueueItem } from '../models/skill-queue-item';
+import { ApiService } from 'services/api.service';
+import { CharacterInfo } from 'models/character-info';
+import { SkillQueueItem } from 'models/skill-queue-item';
 
 @Injectable()
 export class CurrentCharacterService {

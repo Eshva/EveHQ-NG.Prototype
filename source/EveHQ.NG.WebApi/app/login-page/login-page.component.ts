@@ -2,9 +2,9 @@ import { Component, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { shell } from 'electron';
 import { Subscription } from 'rxjs/Rx';
-import { ApiService } from '../services/api.service';
-import { CharacterInfo } from '../models/character-info';
-import { CurrentCharacterService } from '../services/current-character.service';
+import { ApiService } from 'services/api.service';
+import { CharacterInfo } from 'models/character-info';
+import { CurrentCharacterService } from 'services/current-character.service';
 
 declare var electron: any;
 

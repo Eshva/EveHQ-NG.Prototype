@@ -13,24 +13,28 @@ const { GlobCopyWebpackPlugin, BaseHrefWebpackPlugin, InsertConcatAssetsWebpackP
 const { CommonsChunkPlugin, UglifyJsPlugin } = require('webpack').optimize;
 const { AotPlugin } = require('@ngtools/webpack');
 
-const nodeModules = path.join(process.cwd(), 'node_modules');
-const entryPoints = ['inline', 'polyfills', 'sw-register', 'styles', 'vendor', 'main'];
+const entryPoints = ['inline', 'polyfills', 'styles', 'vendor', 'main'];
 const baseHref = '';
 const deployUrl = '';
 
 const isProduction = process.env.NODE_ENV === 'production';
 
+const projectRoot = path.resolve(__dirname, '.');
+const nodeModulesDirectory = path.resolve(projectRoot, 'node_modules');
+const applicationRootDirectory = path.resolve(projectRoot, 'app');
+
+console.log(`projectRoot = ${projectRoot}`);
+console.log(`nodeModulesDirectory = ${nodeModulesDirectory}`);
+console.log(`applicationRootDirectory = ${applicationRootDirectory}`);
+
 //add all external css to be added in our index.html--> like as if it's .angular-cli.json
 const styles = [
-	'./app/styles.scss'
+	path.resolve(applicationRootDirectory, 'styles.scss')
 ];
 
 //we add all our external scripts we want to load externally, like inserting in our index.html --> like as if it's .angular-cli.json
 const scripts = [
 ];
-
-//create file path for each , so we use for our excludes and includes where needed
-let stylePaths = styles.map(style_src => path.join(process.cwd(), style_src));
 
 function getPlugins() {
 	const plugins = [];
@@ -38,168 +42,183 @@ function getPlugins() {
 	// Always expose NODE_ENV to webpack, you can now use `process.env.NODE_ENV`
 	// inside your code for any environment checks; UglifyJS will automatically
 	// drop any unreachable code.
-	plugins.push(new DefinePlugin({
-		"process.env.NODE_ENV": '"production"'
-	}));
+	plugins.push(
+		new DefinePlugin({
+			"process.env.NODE_ENV": '"production"'
+		}));
 
 	plugins.push(new NoEmitOnErrorsPlugin());
 
 	if (scripts.length > 0) {
-		plugins.push(new ConcatPlugin({
-			"uglify": false,
-			"sourceMap": true,
-			"name": 'scripts',
-			"fileName": '[name].bundle.js',
-			"filesToConcat": scripts
-		}));
-		plugins.push(new InsertConcatAssetsWebpackPlugin([
-			'scripts'
-		]));
+		plugins.push(
+			new ConcatPlugin({
+				"uglify": false,
+				"sourceMap": true,
+				"name": 'scripts',
+				"fileName": '[name].bundle.js',
+				"filesToConcat": scripts
+			}));
+		plugins.push(
+			new InsertConcatAssetsWebpackPlugin([
+				'scripts'
+			]));
 	}
 
-	plugins.push(new GlobCopyWebpackPlugin({
-		"patterns": [
-			'assets',
-			'favicon.ico'
-		],
-		"globOptions": {
-			"cwd": process.cwd() + '/app',
-			"dot": true,
-			"ignore": '**/.gitkeep'
-		}
-	}));
+	plugins.push(
+		new GlobCopyWebpackPlugin({
+			"patterns": [
+				'assets',
+				'favicon.ico'
+			],
+			"globOptions": {
+				"cwd": applicationRootDirectory,
+				"dot": true,
+				"ignore": '**/.gitkeep'
+			}
+		}));
 
 	plugins.push(new ProgressPlugin());
 
-	plugins.push(new HtmlWebpackPlugin({
-		"template": './app/index.html',
-		"filename": './index.html',
-		"hash": false,
-		"inject": true,
-		"compile": true,
-		"favicon": false,
-		"minify": false,
-		"cache": true,
-		"showErrors": true,
-		"chunks": 'all',
-		"excludeChunks": [],
-		"title": 'Webpack App',
-		"xhtml": true,
-		"chunksSortMode": function sort(left, right) {
-			let leftIndex = entryPoints.indexOf(left.names[0]);
-			let rightindex = entryPoints.indexOf(right.names[0]);
-			if (leftIndex > rightindex) {
-				return 1;
+	plugins.push(
+		new HtmlWebpackPlugin({
+			"template": path.resolve(applicationRootDirectory, 'index.html'),
+			"filename": 'index.html',
+			"hash": false,
+			"inject": true,
+			"compile": true,
+			"favicon": false,
+			"minify": false,
+			"cache": true,
+			"showErrors": true,
+			"chunks": 'all',
+			"excludeChunks": [],
+			"title": 'EveHQ NG',
+			"xhtml": true,
+			"chunksSortMode": function(left, right) {
+				const leftIndex = entryPoints.indexOf(left.names[0]);
+				const rightindex = entryPoints.indexOf(right.names[0]);
+				if (leftIndex > rightindex) {
+					return 1;
+				}
+				else if (leftIndex < rightindex) {
+					return -1;
+				}
+				else {
+					return 0;
+				}
 			}
-			else if (leftIndex < rightindex) {
-				return -1;
-			}
-			else {
-				return 0;
-			}
-		}
-	}));
-
-	plugins.push(new BaseHrefWebpackPlugin({}));
-
-	plugins.push(new CommonsChunkPlugin({
-		"name": 'inline',
-		"minChunks": null
-	}));
-
-	plugins.push(new CommonsChunkPlugin({
-		"name": 'vendor',
-		"minChunks": (module) => module.resource && module.resource.startsWith(nodeModules),
-		"chunks": [
-			'main'
-		]
-	}));
-
-	plugins.push(new ExtractTextPlugin({
-		"filename": '[name].bundle.css',
-		"disable": true
-	}));
-
-	plugins.push(new LoaderOptionsPlugin({
-		"sourceMap": false,
-		"options": {
-			"postcss": [
-				autoprefixer(),
-				postcssUrl({
-					"url": (obj) => {
-						// Only convert root relative URLs, which CSS-Loader won't process into require().
-						if (!obj.url.startsWith('/') || obj.url.startsWith('//')) {
-							return obj.url;
-						}
-						if (deployUrl.match(/:\/\//)) {
-							// If deployUrl contains a scheme, ignore baseHref use deployUrl as is.
-							return `${deployUrl.replace(/\/$/, '')}${obj.url}`;
-						}
-						else if (baseHref.match(/:\/\//)) {
-							// If baseHref contains a scheme, include it as is.
-							return baseHref.replace(/\/$/, '') +
-								`/${deployUrl}/${obj.url}`.replace(/\/\/+/g, '/');
-						}
-						else {
-							// Join together base-href, deploy-url and the original URL.
-							// Also dedupe multiple slashes into single ones.
-							return `/${baseHref}/${deployUrl}/${obj.url}`.replace(/\/\/+/g, '/');
-						}
-					}
-				})
-			],
-			"sassLoader": {
-				"sourceMap": false,
-				"includePaths": []
-			},
-			"context": ''
-		}
-	}));
-
-	plugins.push(new StyleLintPlugin(
-		{
-			syntax: 'scss',
-			emitErrors: true
 		}));
+
+	plugins.push(
+		new BaseHrefWebpackPlugin({}));
+
+	plugins.push(
+		new CommonsChunkPlugin({
+			"name": 'inline',
+			"minChunks": null
+		}));
+
+	plugins.push(
+		new CommonsChunkPlugin({
+			"name": 'vendor',
+			"minChunks": (module) => module.resource && module.resource.startsWith(nodeModulesDirectory),
+			"chunks": [
+				'main'
+			]
+		}));
+
+	plugins.push(
+		new ExtractTextPlugin({
+			"filename": '[name].bundle.css',
+			"disable": true
+		}));
+
+	plugins.push(
+		new LoaderOptionsPlugin({
+			"sourceMap": false,
+			"options": {
+				"postcss": [
+					autoprefixer(),
+					postcssUrl({
+						"url": (obj) => {
+							// Only convert root relative URLs, which CSS-Loader won't process into require().
+							if (!obj.url.startsWith('/') || obj.url.startsWith('//')) {
+								return obj.url;
+							}
+							if (deployUrl.match(/:\/\//)) {
+								// If deployUrl contains a scheme, ignore baseHref use deployUrl as is.
+								return `${deployUrl.replace(/\/$/, '')}${obj.url}`;
+							}
+							else if (baseHref.match(/:\/\//)) {
+								// If baseHref contains a scheme, include it as is.
+								return baseHref.replace(/\/$/, '') +
+									`/${deployUrl}/${obj.url}`.replace(/\/\/+/g, '/');
+							}
+							else {
+								// Join together base-href, deploy-url and the original URL.
+								// Also dedupe multiple slashes into single ones.
+								return `/${baseHref}/${deployUrl}/${obj.url}`.replace(/\/\/+/g, '/');
+							}
+						}
+					})
+				],
+				"sassLoader": {
+					"sourceMap": false,
+					"includePaths": []
+				},
+				"context": ''
+			}
+		}));
+
+	plugins.push(
+		new StyleLintPlugin(
+			{
+				syntax: 'scss',
+				emitErrors: true
+			}));
 
 	if (isProduction) {
-		plugins.push(new HashedModuleIdsPlugin({
-			"hashFunction": 'md5',
-			"hashDigest": 'base64',
-			"hashDigestLength": 4
-		}));
+		plugins.push(
+			new HashedModuleIdsPlugin({
+				"hashFunction": 'md5',
+				"hashDigest": 'base64',
+				"hashDigestLength": 4
+			}));
 
-		plugins.push(new AotPlugin({
-			"mainPath": 'index.ts',
-			"hostReplacementPaths": {
-				"environments/index.ts": 'environments/index.prod.ts'
-			},
-			"exclude": [],
-			"tsConfigPath": 'app/tsconfig.json'
-		}));
+		plugins.push(
+			new AotPlugin({
+				"mainPath": 'index.ts',
+				"hostReplacementPaths": {
+					"environments/index.ts": 'environments/index.prod.ts'
+				},
+				"exclude": [],
+				"tsConfigPath": path.resolve(applicationRootDirectory, 'tsconfig.json')
+			}));
 
-		plugins.push(new UglifyJsPlugin({
-			"mangle": {
-				"screw_ie8": true
-			},
-			"compress": {
-				"screw_ie8": true,
-				"warnings": false
-			},
-			"sourceMap": false
-		}));
+		plugins.push(
+			new UglifyJsPlugin({
+				"mangle": {
+					"screw_ie8": true
+				},
+				"compress": {
+					"screw_ie8": true,
+					"warnings": false
+				},
+				"sourceMap": false
+			}));
 
 	}
 	else {
-		plugins.push(new AotPlugin({
-			"mainPath": 'index.ts',
-			"hostReplacementPaths": {
-				"environments/index.ts": 'environments/index.ts'
-			},
-			"exclude": [],
-			"tsConfigPath": 'app/tsconfig.json',
-			"skipCodeGeneration": true
-		}));
+		plugins.push(
+			new AotPlugin({
+				"mainPath": 'index.ts',
+				"hostReplacementPaths": {
+					"environments/index.ts": 'environments/index.ts'
+				},
+				"exclude": [],
+				"tsConfigPath": path.resolve(applicationRootDirectory, 'tsconfig.json'),
+				"skipCodeGeneration": true
+			}));
 	}
 
 	return plugins;
@@ -232,38 +251,35 @@ module.exports = {
 		"zlib": "require('zlib')"
 	},
 	"resolve": {
-		"extensions": [
-			'.ts',
-			'.js',
-			'.scss',
-			'.json'
-		],
+		"extensions": ['.ts', '.js', '.scss', '.html'],
+		symlinks: false,
 		"aliasFields": [],
 		"alias": { // WORKAROUND See. angular-cli/issues/5433
 			"environments": isProduction
-								? path.resolve(__dirname, 'app/environments/index.prod.ts')
-								: path.resolve(__dirname, 'app/environments/index.ts')
+								? path.resolve(applicationRootDirectory, 'environments/index.prod.ts')
+								: path.resolve(applicationRootDirectory, 'environments/index.ts')
 		},
 		"modules": [
-			'./node_modules'
+			nodeModulesDirectory,
+			applicationRootDirectory
 		]
 	},
 	"resolveLoader": {
 		"modules": [
-			'./node_modules'
+			nodeModulesDirectory
 		]
 	},
 	"entry": {
 		"main": [
-			'./app/index.ts'
+			path.resolve(applicationRootDirectory, 'index.ts')
 		],
 		"polyfills": [
-			'./app/polyfills.ts'
+			path.resolve(applicationRootDirectory, 'polyfills.ts')
 		],
 		"styles": styles
 	},
 	"output": {
-		"path": path.join(process.cwd(), '../bin/dist'),
+		"path": path.resolve(projectRoot, '../bin/dist'),
 		"filename": '[name].bundle.js',
 		"chunkFilename": '[id].chunk.js'
 	},
@@ -275,7 +291,7 @@ module.exports = {
 				"loader": 'source-map-loader',
 				"exclude": [
 					/\/node_modules\//,
-					path.join(__dirname, 'node_modules', '@angular/compiler')
+					path.join(nodeModulesDirectory, '@angular/compiler')
 				]
 			},
 			{
@@ -291,7 +307,7 @@ module.exports = {
 				"loader": 'url-loader?name=[name].[hash:20].[ext]&limit=10000'
 			},
 			{
-				"exclude": stylePaths,
+				"exclude": styles,
 				"test": /\.css$/,
 				"loaders": [
 					'exports-loader?module.exports.toString()',
@@ -300,7 +316,7 @@ module.exports = {
 				]
 			},
 			{
-				"exclude": stylePaths,
+				"exclude": styles,
 				"test": /\.scss$|\.sass$/,
 				"loaders": [
 					'exports-loader?module.exports.toString()',
@@ -310,7 +326,7 @@ module.exports = {
 				]
 			},
 			{
-				"include": stylePaths,
+				"include": styles,
 				"test": /\.css$/,
 				"loaders": ExtractTextPlugin.extract({
 					"use": [
@@ -322,7 +338,7 @@ module.exports = {
 				})
 			},
 			{
-				"include": stylePaths,
+				"include": styles,
 				"test": /\.scss$|\.sass$/,
 				"loaders": ExtractTextPlugin.extract({
 					"use": [
