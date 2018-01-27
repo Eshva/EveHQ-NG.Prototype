@@ -34,7 +34,7 @@
 	"build:windows": "npm run build:ui:dev && npm run build:windows:service && npm run build:windows:copyservice && npm run electrontsc && ncp ./electron/package.json ../bin/dist/package.json",
 	"build:linux:service": "rm -r -f ../bin/debug/core/linux-x64/ && dotnet publish ../EveHQ-NG.sln --runtime linux-x64 --configuration Debug --self-contained",
 	"build:linux:copyservice": "cd ../bin/debug/core/linux-x64/ && fsys --task=copy --filesFolders=publish --destination=../../../dist/ --clobber='true' --preserveTimestamps='true' && cd ../../../../",
-	"build:linux": "npm run build:ui:dev && npm run build:linux:service && npm run build:linux:copyservice && npm run electrontsc && ncp ./package.json ../bin/dist/package.json && cd ../bin/dist/ && npm install --prod",
+	"build:linux": "npm run build:ui:dev && npm run build:linux:service && npm run build:linux:copyservice && npm run electrontsc && ncp ./electron/package.json ../bin/dist/package.json",
 	"build:windows:package": "npm run build:windows && electron-builder --win",
 	"build:linux:package": "npm run build:linux && electron-builder --linux"
   },
