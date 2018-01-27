@@ -8,7 +8,7 @@ const args = process.argv.slice(1);
 let serve = args.some(val => val === '--serve');
 
 if (serve) {
-	require('electron-reload')(__dirname);
+	require('../../EveHQ.NG.WebApi/node_modules/electron-reload')(__dirname);
 }
 
 let mainWindow: Electron.BrowserWindow | null;
