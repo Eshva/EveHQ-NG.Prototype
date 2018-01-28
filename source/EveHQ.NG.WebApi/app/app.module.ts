@@ -11,7 +11,8 @@ import { LoginPageComponent } from 'login-page/login-page.component';
 import { CurrentCharacterService } from 'services/current-character.service';
 import { CharacterInfoPageComponent } from 'character-info-page/character-info-page.component';
 import { RomanNumberPipe } from 'services/roman-number.pipe';
-import { LogService } from './services/log.service';
+import { LogService } from 'services/log.service';
+import { ApiEndpointsService } from 'services/api-endpoints.service';
 
 @NgModule({
 	declarations: [
@@ -29,7 +30,8 @@ import { LogService } from './services/log.service';
 	providers: [
 		ApiService,
 		CurrentCharacterService,
-		LogService
+		LogService,
+		ApiEndpointsService
 	],
 	bootstrap: [AppComponent]
 })
