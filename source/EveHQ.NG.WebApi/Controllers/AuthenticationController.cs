@@ -6,7 +6,6 @@
 
 #region Usings
 
-using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -14,6 +13,7 @@ using EveHQ.NG.WebApi.Characters;
 using EveHQ.NG.WebApi.Infrastructure;
 using EveHQ.NG.WebApi.Sso;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 #endregion
@@ -28,12 +28,14 @@ namespace EveHQ.NG.WebApi.Controllers
 			IOAuthAuthenticator authenticator,
 			ICharactersApi charactersApi,
 			ILoggedInCharacterRepository loggedInCharacterRepository,
-			IHttpService httpService)
+			IHttpService httpService,
+			ILogger<AuthenticationController> logger)
 		{
 			_authenticator = authenticator;
 			_charactersApi = charactersApi;
 			_loggedInCharacterRepository = loggedInCharacterRepository;
 			_httpService = httpService;
+			_logger = logger;
 		}
 
 		[HttpGet("GetAuthenticationUri")]
@@ -42,13 +44,13 @@ namespace EveHQ.NG.WebApi.Controllers
 		[HttpPost("AuthenticatioWithCode")]
 		public async Task<IActionResult> AuthenticateCharacterWithAutharizationCode([FromQuery] string codeUri, [FromQuery] string state)
 		{
-			var tokens = await _authenticator.AuthenticateCharacterWithAutharizationCode(codeUri, state);
+			var tokens = await _authenticator.AuthenticateCharacterWithAuthorizationCode(codeUri, state);
 			var information = await GetCharacterInfo(tokens.AccessToken);
 			var character = new Character { Information = information, Tokens = tokens };
 			await _charactersApi.GetPortraits(character);
 
 			_loggedInCharacterRepository.AddOrReplaceCharacter(character);
-			Console.WriteLine($"Gotten tokens for character '{character.Information.Name}' with ID {character.Information.Id}.");
+			_logger.LogInformation($"Gotten tokens for character '{character.Information.Name}' with ID {character.Information.Id}.");
 
 			return Ok();
 		}
@@ -83,6 +85,7 @@ namespace EveHQ.NG.WebApi.Controllers
 		private readonly ICharactersApi _charactersApi;
 		private readonly ILoggedInCharacterRepository _loggedInCharacterRepository;
 		private readonly IHttpService _httpService;
+		private readonly ILogger<AuthenticationController> _logger;
 		private const string HostUri = "login.eveonline.com";
 	}
 }

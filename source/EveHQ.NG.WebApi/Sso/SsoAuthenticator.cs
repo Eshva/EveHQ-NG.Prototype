@@ -19,6 +19,7 @@ using System.Threading.Tasks;
 using EveHQ.NG.WebApi.Characters;
 using EveHQ.NG.WebApi.Infrastructure;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 #endregion
@@ -33,16 +34,20 @@ namespace EveHQ.NG.WebApi.Sso
 			IAuthenticationSecretsStorage authenticationSecretsStorage,
 			ILoggedInCharacterRepository loggedInCharacterRepository,
 			IHttpService httpService,
-			IClock clock)
+			IClock clock,
+			ILogger<SsoAuthenticator> logger)
 		{
 			_authenticationSecretsStorage = authenticationSecretsStorage;
 			_loggedInCharacterRepository = loggedInCharacterRepository;
 			_httpService = httpService;
 			_clock = clock;
+			_logger = logger;
 		}
 
 		public string GetAuthenticationUri()
 		{
+			_logger.LogInformation("Requested authentication URI.");
+
 			var uriBuilder = new StringBuilder($"https://{HostUri}/oauth/authorize/");
 			uriBuilder.Append("?response_type=code")
 					.Append($"&redirect_uri={WebUtility.UrlEncode(_authenticationSecretsStorage.RedirectUri)}")
@@ -53,7 +58,7 @@ namespace EveHQ.NG.WebApi.Sso
 			return uriBuilder.ToString();
 		}
 
-		public async Task<CharacterTokens> AuthenticateCharacterWithAutharizationCode(string codeUri, string state)
+		public async Task<CharacterTokens> AuthenticateCharacterWithAuthorizationCode(string codeUri, string state)
 		{
 			string ExtractCodeFromCodeUri()
 			{
@@ -85,6 +90,8 @@ namespace EveHQ.NG.WebApi.Sso
 				throw new ApplicationException("Authentication faild because state key was wrong. Seams like someone wants to steal your credentials.");
 			}
 
+			_logger.LogInformation("Requested authentication a character with authorization code.");
+
 			return await _httpService.CallAsync(
 				CreateAuthorizationRequest,
 				response => response.Content.ReadAsStringAsync().ContinueWith(PrepareResult));
@@ -92,8 +99,6 @@ namespace EveHQ.NG.WebApi.Sso
 
 		public async Task RefreshTokens(CharacterTokens tokens)
 		{
-			Console.WriteLine("Refreshing tokens...");
-
 			HttpRequestMessage CreateRefreshTokenRequest() =>
 				CreateTokenRequest(
 					() => new[]
@@ -110,6 +115,8 @@ namespace EveHQ.NG.WebApi.Sso
 				tokens.AccessTokenValidTill = _clock.UtcNow.AddSeconds(response.ExpirationTimeInSeconds);
 			}
 
+			_logger.LogInformation("Refreshing tokens for character using SSO.");
+
 			await _httpService.CallAsync(
 				CreateRefreshTokenRequest,
 				response => response.Content.ReadAsStringAsync().ContinueWith(PrepareResult));
@@ -118,8 +125,8 @@ namespace EveHQ.NG.WebApi.Sso
 		public void Logout(uint characterId)
 		{
 			var character = _loggedInCharacterRepository.CharacterInfos.Single(info => info.Id == characterId);
-			Console.WriteLine($"Logged out character '{character.Name}' with ID {character.Id}.");
 
+			_logger.LogInformation("Logged out character '{character}' with ID {Id}.", character.Name, character.Id);
 			_loggedInCharacterRepository.RemoveCharacter(characterId);
 		}
 
@@ -139,6 +146,7 @@ namespace EveHQ.NG.WebApi.Sso
 		private readonly ILoggedInCharacterRepository _loggedInCharacterRepository;
 		private readonly IHttpService _httpService;
 		private readonly IClock _clock;
+		private readonly ILogger<SsoAuthenticator> _logger;
 		private const string HostUri = "login.eveonline.com";
 	}
 }

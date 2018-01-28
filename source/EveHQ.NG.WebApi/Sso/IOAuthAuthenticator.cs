@@ -18,7 +18,7 @@ namespace EveHQ.NG.WebApi.Sso
 	{
 		string GetAuthenticationUri();
 
-		Task<CharacterTokens> AuthenticateCharacterWithAutharizationCode(string codeUri, string state);
+		Task<CharacterTokens> AuthenticateCharacterWithAuthorizationCode(string codeUri, string state);
 
 		Task RefreshTokens(CharacterTokens tokens);
 

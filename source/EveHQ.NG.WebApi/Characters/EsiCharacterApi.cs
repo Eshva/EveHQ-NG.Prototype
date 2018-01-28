@@ -6,13 +6,13 @@
 
 #region Usings
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using EveHQ.NG.WebApi.Infrastructure;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 #endregion
@@ -25,10 +25,12 @@ namespace EveHQ.NG.WebApi.Characters
 	{
 		public EsiCharacterApi(
 			ICharactersApiUriProvider charactersApiUriProvider,
-			IHttpService httpService)
+			IHttpService httpService,
+			ILogger<EsiCharacterApi> logger)
 		{
 			_charactersApiUriProvider = charactersApiUriProvider;
 			_httpService = httpService;
+			_logger = logger;
 		}
 
 		public async Task<CharacterInfo> GetInfo(uint id)
@@ -38,6 +40,8 @@ namespace EveHQ.NG.WebApi.Characters
 				var dto = JsonConvert.DeserializeObject<EsiCharacterInfo>(task.Result);
 				return new CharacterInfo { Id = id, Name = dto.Name, BornOn = dto.BornOn };
 			}
+
+			_logger.LogInformation("Getting information for character with ID: {characterId}.", id);
 
 			return await _httpService.CallAsync(
 				HttpMethod.Get,
@@ -55,6 +59,11 @@ namespace EveHQ.NG.WebApi.Characters
 				character.Information.Portrait256Uri = dto.Image256x256Uri;
 				character.Information.Portrait512Uri = dto.Image512x512Uri;
 			}
+
+			_logger.LogInformation(
+				"Getting portraits for character {characterName} with ID: {characterId}.",
+				character.Information.Name,
+				character.Information.Id);
 
 			await _httpService.CallAsync(
 				HttpMethod.Get,
@@ -78,7 +87,11 @@ namespace EveHQ.NG.WebApi.Characters
 					LevelStartSkillPoints = dto.LevelStartSkillPoints
 				};
 
-			Console.WriteLine("Getting skill queue...");
+			_logger.LogInformation(
+				"Getting skill queue for character {characterName} with ID: {characterId}.",
+				character.Information.Name,
+				character.Information.Id);
+
 			return await _httpService.CallAsync(
 				HttpMethod.Get,
 				_charactersApiUriProvider.GetSkillQueueUri(character),
@@ -89,5 +102,6 @@ namespace EveHQ.NG.WebApi.Characters
 
 		private readonly ICharactersApiUriProvider _charactersApiUriProvider;
 		private readonly IHttpService _httpService;
+		private readonly ILogger<EsiCharacterApi> _logger;
 	}
 }
