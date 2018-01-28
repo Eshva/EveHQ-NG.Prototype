@@ -6,9 +6,12 @@ let webApiProcess: any;
 
 const args = process.argv.slice(1);
 let serve = args.some(val => val === '--serve');
+const serviceBaseUrl = 'http://localhost:5000/api';
+
+require('electron-unhandled')({ logger: logExceptionToApi, showDialog: false });
 
 if (serve) {
-	require('../../EveHQ.NG.WebApi/node_modules/electron-reload')(__dirname);
+	require('electron-reload')(__dirname);
 }
 
 let mainWindow: Electron.BrowserWindow | null;
@@ -40,7 +43,7 @@ try {
 			if (mainWindow == null) {
 				createMainWindow();
 				mainWindow.webContents.openDevTools();
-			}		
+			}
 
 			setServiceDefaults();
 		});
@@ -67,10 +70,20 @@ try {
 			}
 		});
 
-}
-catch (e) {
-	// TODO: Catch Error
-	// throw e;
+/*
+	process.on(
+		'uncaughtException',
+		error => {
+			logExceptionToApi(error);
+		});
+
+	process.on(
+		'unhandledRejection',
+		error => {
+			logExceptionToApi(error);
+			console.error(`Unhandled exception in the MAIN process: ${error}`);
+		});
+*/
 }
 finally {
 	mainWindow = null;
@@ -86,12 +99,10 @@ function startApi() {
 
 		//  run server
 		webApiProcess = childProcess(buildPathToWebApi());
-		webApiProcess.stdout.on('data', (data: any) => console.log(`stdout: ${data}`));
-		webApiProcess.stderr.on('data', (data: any) => console.error(`stderr: ${data}`));
 	}
 	catch (error) {
 		console.error(`An error occured: ${error}`);
-	} 
+	}
 }
 
 function stopApi() {
@@ -158,6 +169,9 @@ function createMainWindow() {
 			// when you should delete the corresponding element.
 			mainWindow = null;
 		});
+
+	mainWindow.on('unresponsive', () => logExceptionToApi(new Error('Main window is unresponsive.')));
+	mainWindow.webContents.on('crashed', (event: any, killed: boolean) => logExceptionToApi(new Error(`Renderer process crashed. Killed: ${killed}.`)));
 }
 
 function processArguments(otherInstanceArguments: string[]) {
@@ -170,8 +184,7 @@ function processArguments(otherInstanceArguments: string[]) {
 	const match = /^eveauth-evehq-ng:\/\/sso-auth\/\?code=(.+?)&state=(.+?)$/.exec(payload);
 
 	if (match != null) {
-		const code = match[0];
-		const state = match[1];
+		const [code, state] = match;
 		const localAuthenticationServiceUrl =
 			`${serviceBaseUrl}/authentication/authenticatioWithCode?codeUri=${code}&state=${state}`;
 		const authenticationRequest = net.request({
@@ -213,4 +226,26 @@ function setServiceDefaults() {
 
 }
 
-const serviceBaseUrl = 'http://localhost:5000/api';
+function logExceptionToApi(error: Error) {
+	console.error(error);
+
+	const clientLoggingUrl = `${serviceBaseUrl}/clientlogging/error`;
+	const logRequest = net.request({
+		url: clientLoggingUrl,
+		method: 'POST'
+	});
+
+	logRequest.setHeader('Content-Type', 'application/json');
+	logRequest.write(`${JSON.stringify(`Uncaught exception in the ${process.type} Electron process:\n${error.stack}`)}`);
+	logRequest.on(
+		'response',
+		response => {
+			console.warn(`Status of log error call: ${response.statusCode}`);
+		});
+	logRequest.on(
+		'error',
+		error1 => {
+			console.warn(`Error on log error call: ${error1.message}`);
+		});
+	logRequest.end();
+}

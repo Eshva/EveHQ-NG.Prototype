@@ -5,6 +5,7 @@ import { CurrentCharacterService } from 'services/current-character.service';
 import { ApiService } from 'services/api.service';
 import { CharacterInfo } from 'models/character-info';
 import { SkillQueueItem } from 'models/skill-queue-item';
+import { LogService } from 'services/log.service';
 
 @Component({
 	selector: 'app-character-info-page',
@@ -15,7 +16,8 @@ export class CharacterInfoPageComponent implements OnDestroy {
 	constructor(
 		private readonly api: ApiService,
 		private readonly currentCharacterService: CurrentCharacterService,
-		private readonly router: Router) {
+		private readonly router: Router,
+		private readonly log: LogService) {
 		this.setCurrentAndGoToLoginIfNotItNotPresent();
 
 		this.loggedInCharacterListChangedSubscription =
@@ -23,8 +25,8 @@ export class CharacterInfoPageComponent implements OnDestroy {
 				(characters: CharacterInfo[]) => {
 					this.setCurrentAndGoToLoginIfNotItNotPresent();
 				},
-				error => console.error(`MMMM: ${error}`),
-				() => console.info('MMMM Complited.'));
+				error => this.log.error('An error occured during applying of changing the current character.', error),
+				() => this.log.info('Changing of the current character applied.'));
 	}
 
 	public ngOnDestroy(): void {
@@ -51,8 +53,13 @@ export class CharacterInfoPageComponent implements OnDestroy {
 			return;
 		}
 
+		this.log.info(`Requesting log out for character ${this.currentCharacter.name} with ID ${this.currentCharacter.id}.`);
 		this.api.post(`http://localhost:5000/api/authentication/${this.currentCharacter.id}/logout/`)
-			.subscribe(() => this.navigateToLoginPage());
+			.subscribe(() => {
+					this.log.info('Character logged out. Navigating to login page.');
+					return this.navigateToLoginPage();
+				},
+				error => this.log.error('An error occured during logging out character.', error));
 	}
 
 	private navigateToLoginPage(): void {

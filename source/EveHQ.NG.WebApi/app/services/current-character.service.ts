@@ -4,10 +4,15 @@ import { Observable, Subject } from 'rxjs/Rx';
 import { ApiService } from 'services/api.service';
 import { CharacterInfo } from 'models/character-info';
 import { SkillQueueItem } from 'models/skill-queue-item';
+import { LogService } from 'services/log.service';
+import { ApiEndpointsService } from 'services/api-endpoints.service';
 
 @Injectable()
 export class CurrentCharacterService {
-	constructor(private readonly api: ApiService) {
+	constructor(
+		private readonly api: ApiService,
+		private readonly endpoints: ApiEndpointsService,
+		private readonly log: LogService) {
 		this.createNotificator();
 		this.getLoggedInCharacters();
 	}
@@ -21,16 +26,16 @@ export class CurrentCharacterService {
 	public loggedInCharacterListChanged: Subject<CharacterInfo[]>;
 
 	public getSkillQueue(id: number): Observable<SkillQueueItem[]> {
-		return this.api.get(`http://localhost:5000/api/characters/${id}/skillqueue`).map(data => data as SkillQueueItem[]);
+		return this.api.get(`${this.endpoints.characters}/${id}/skillqueue`).map(data => data as SkillQueueItem[]);
 	}
 
 	private createNotificator(): void {
 		this.loggedInCharacterListChanged = new Subject();
-		this.authenticationNotificationHub = new HubConnection('http://localhost:5000/authentication-notification');
+		this.authenticationNotificationHub = new HubConnection(this.endpoints.authenticationNotification);
 		this.authenticationNotificationHub
 			.start()
-			.then(() => console.info('Connection to authentication-notification hub established.'))
-			.catch(error => console.error(`Error while establishing connection to authentication-notification hub: ${error}`));
+			.then(() => this.log.info('Connection to authentication-notification hub established.'))
+			.catch(error => this.log.error('Error while establishing connection to authentication-notification hub.', error));
 		this.authenticationNotificationHub.on(
 			'LoggedInCharacterListChanged',
 			(loggedInCharacters: CharacterInfo[]) => {
@@ -49,7 +54,7 @@ export class CurrentCharacterService {
 	}
 
 	private getLoggedInCharacters(): void {
-		this.api.get('http://localhost:5000/api/characters/').subscribe(
+		this.api.get(this.endpoints.characters).subscribe(
 			(characters: CharacterInfo[]) => {
 				this._characters = characters;
 				if (characters.length > 0) {
