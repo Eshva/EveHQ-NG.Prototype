@@ -15,8 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EveHQ.NG.WebApi.Controllers
 {
-	[Route("api/[controller]")]
-	public sealed class CharactersController : Controller
+	public sealed class CharactersController : ApiControllerBase
 	{
 		public CharactersController(
 			ILoggedInCharacterRepository characterRepository,

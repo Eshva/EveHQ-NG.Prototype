@@ -21,8 +21,7 @@ using Newtonsoft.Json;
 
 namespace EveHQ.NG.WebApi.Controllers
 {
-	[Route("api/[controller]")]
-	public sealed class AuthenticationController : Controller
+	public sealed class AuthenticationController : ApiControllerBase
 	{
 		public AuthenticationController(
 			IOAuthAuthenticator authenticator,
@@ -78,6 +77,8 @@ namespace EveHQ.NG.WebApi.Controllers
 				response => response.Content
 									.ReadAsStringAsync()
 									.ContinueWith(task => JsonConvert.DeserializeObject<SsoAuthenticatedCharacterInfo>(task.Result).CharacterId));
+			_logger.LogInformation("Verified authenticated character with ID {id}.", characterId);
+
 			return await _charactersApi.GetInfo(characterId);
 		}
 
