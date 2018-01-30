@@ -1,6 +1,7 @@
 #region Usings
 
 using EveHQ.NG.WebApi.Infrastructure;
+using EveHQ.NG.WebApi.Infrastructure.Options;
 using Microsoft.AspNetCore.Mvc;
 
 #endregion
@@ -8,21 +9,24 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EveHQ.NG.WebApi.Controllers
 {
-	[Route("api/[controller]")]
-	public sealed class SettingsController : Controller
+	public sealed class SettingsController : ApiControllerBase
 	{
-		public SettingsController(ApplicationSettings applicationSettings)
+		public SettingsController(IWritableOptions<ApplicationSettings> applicationSettings)
 		{
 			_applicationSettings = applicationSettings;
 		}
 
-		[HttpPost("setDefaults")]
-		public IActionResult SetDefults([FromBody] ServiceSettings settings)
+		[HttpPost("folders")]
+		public IActionResult SetApplicationSettings([FromBody] FolderSettings settings)
 		{
-			_applicationSettings.DefaultFolders = settings;
+			_applicationSettings.Update(
+				applicationSettings =>
+				{
+					applicationSettings.FolderSettings.ApplicationDataFolder = settings.ApplicationDataFolder;
+				});
 			return Ok();
 		}
 
-		private readonly ApplicationSettings _applicationSettings;
+		private readonly IWritableOptions<ApplicationSettings> _applicationSettings;
 	}
 }

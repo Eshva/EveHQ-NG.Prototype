@@ -6,6 +6,7 @@ import { ApiService } from 'services/api.service';
 import { CharacterInfo } from 'models/character-info';
 import { SkillQueueItem } from 'models/skill-queue-item';
 import { LogService } from 'services/log.service';
+import { ApiEndpointsService } from 'services/api-endpoints.service';
 
 @Component({
 	selector: 'app-character-info-page',
@@ -17,6 +18,7 @@ export class CharacterInfoPageComponent implements OnDestroy {
 		private readonly api: ApiService,
 		private readonly currentCharacterService: CurrentCharacterService,
 		private readonly router: Router,
+		private readonly endpoints: ApiEndpointsService,
 		private readonly log: LogService) {
 		this.setCurrentAndGoToLoginIfNotItNotPresent();
 
@@ -60,6 +62,11 @@ export class CharacterInfoPageComponent implements OnDestroy {
 					return this.navigateToLoginPage();
 				},
 				error => this.log.error('An error occured during logging out character.', error));
+	}
+
+	private testSettings(): void {
+		const settings = { applicationDataFolder: `${Math.random().toString()}`, temporaryDataFolder: `${Date.now().toString()}`, };
+		this.api.post(`${this.endpoints.settings}/folders`, settings).subscribe();
 	}
 
 	private navigateToLoginPage(): void {

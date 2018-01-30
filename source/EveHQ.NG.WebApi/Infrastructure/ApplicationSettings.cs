@@ -6,7 +6,6 @@
 
 #region Usings
 
-using System;
 using System.Diagnostics.CodeAnalysis;
 
 #endregion
@@ -17,26 +16,6 @@ namespace EveHQ.NG.WebApi.Infrastructure
 	[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global", Justification = "Created by IoC-container.")]
 	public sealed class ApplicationSettings
 	{
-		public string ApplicationDataFolder { get; set; } = string.Empty;
-
-		public string TemporaryDataFolder { get; set; } = string.Empty;
-
-		public ServiceSettings DefaultFolders
-		{
-			get => _defaultFolders;
-			set
-			{
-				if (value == null)
-				{
-					throw new ArgumentNullException(nameof(value));
-				}
-
-				_defaultFolders = value;
-				ApplicationDataFolder = !string.IsNullOrEmpty(value.ApplicationDataFolder) ? value.ApplicationDataFolder : string.Empty;
-				TemporaryDataFolder = !string.IsNullOrEmpty(value.TemporaryDataFolder) ? value.TemporaryDataFolder : string.Empty;
-			}
-		}
-
-		private ServiceSettings _defaultFolders = new ServiceSettings();
+		public FolderSettings FolderSettings { get; set; } = new FolderSettings();
 	}
 }

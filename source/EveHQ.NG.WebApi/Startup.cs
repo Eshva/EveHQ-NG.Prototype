@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using EveHQ.NG.WebApi.Infrastructure;
+using EveHQ.NG.WebApi.Infrastructure.Options;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -41,6 +42,10 @@ namespace EveHQ.NG.WebApi
 					builder => builder.AllowAnyMethod().AllowAnyHeader().WithOrigins($"http://localhost:{SignalRPort}")));
 
 			services.AddSignalR();
+
+			services.ConfigureWritable<ApplicationSettings>(
+				Configuration.GetSection(nameof(FolderSettings)),
+				$"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}/EveHQ NG/Settings/ApplicationSettings.json");
 
 			_applicationContainer = new IocContainerBootstrapper().BuildContainer(services);
 			return new AutofacServiceProvider(_applicationContainer);

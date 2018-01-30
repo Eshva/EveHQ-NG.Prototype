@@ -15,6 +15,10 @@ export class ApiEndpointsService {
 		return `${this.apiBaseUri}/clientlogging`;
 	}
 
+	public get settings() {
+		return `${this.apiBaseUri}/settings`;
+	}
+
 	private readonly baseUri = 'http://localhost:5000';
 	private readonly apiBaseUri = `${this.baseUri}/api`;
 }
