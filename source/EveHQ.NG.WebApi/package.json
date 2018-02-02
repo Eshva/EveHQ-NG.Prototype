@@ -34,8 +34,12 @@
     "build:linux:service": "rm -r -f ../../bin/debug/core/linux-x64/ && dotnet publish ../EveHQ-NG.sln --runtime linux-x64 --configuration Debug --self-contained",
     "build:linux:copyservice": "cd ../../bin/debug/core/linux-x64/ && fsys --task=copy --filesFolders=publish --destination=../../../dist/ --clobber='true' --preserveTimestamps='true'",
     "build:linux": "npm run build:ui:dev && npm run build:linux:service && npm run build:linux:copyservice && npm run electrontsc && npm run electrontsc",
+    "build:mac:service": "rm -r -f ../../bin/debug/core/osx-x64/ && dotnet publish ../EveHQ-NG.sln --runtime osx-x64 --configuration Debug --self-contained",
+    "build:mac:copyservice": "cd ../../bin/debug/core/osx-x64/ && fsys --task=copy --filesFolders=publish --destination=../../../dist/ --clobber='true' --preserveTimestamps='true'",
+    "build:mac": "npm run build:ui:dev && npm run build:mac:service && npm run build:mac:copyservice && npm run electrontsc && npm run electrontsc",
     "build:windows:package": "npm run build:windows && electron-builder --win",
-    "build:linux:package": "npm run build:linux && electron-builder --linux"
+    "build:linux:package": "npm run build:linux && electron-builder --linux",
+    "build:mac:package": "npm run build:mac && electron-builder --mac"
   },
   "engines": {
     "node": "<9.0",

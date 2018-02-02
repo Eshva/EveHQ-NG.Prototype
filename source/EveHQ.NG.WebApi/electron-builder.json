@@ -11,7 +11,14 @@
 	},
 	"artifactName": "${name}-${version}.${ext}",
 	"mac": {
-		"category": "cross-platform-desktop"
+		"category": "cross-platform-desktop",
+		"target": [
+			"pkg"
+		],
+		"files": [
+			"**/*",
+			"publish"
+		]
 	},
 	"win": {
 		"files": [
