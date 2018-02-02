@@ -219,3 +219,5 @@ _Pvt_Extensions
 source/\.vscode/
 
 \.DS_Store
+
+package-lock\.json
