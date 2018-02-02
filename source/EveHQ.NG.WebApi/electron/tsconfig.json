@@ -1,7 +1,7 @@
 {
 	"compileOnSave": false,
 	"compilerOptions": {
-		"outDir": "../../bin/dist",
+		"outDir": "../../../bin/dist",
 		"declaration": false,
 		"emitDecoratorMetadata": true,
 		"experimentalDecorators": true,

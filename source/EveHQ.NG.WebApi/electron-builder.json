@@ -5,8 +5,8 @@
 		"publish"
 	],
 	"directories": {
-		"output": "../bin/release",
-		"app": "../bin/dist",
+		"output": "../../bin/release",
+		"app": "../../bin/dist",
 		"buildResources": "./electron/build"
 	},
 	"artifactName": "${name}-${version}.${ext}",

@@ -279,7 +279,7 @@ module.exports = {
 		"styles": styles
 	},
 	"output": {
-		"path": path.resolve(projectRoot, '../bin/dist'),
+		"path": path.resolve(projectRoot, '../../bin/dist'),
 		"filename": '[name].bundle.js',
 		"chunkFilename": '[id].chunk.js'
 	},
