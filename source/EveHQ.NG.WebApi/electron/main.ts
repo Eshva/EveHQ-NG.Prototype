@@ -71,6 +71,14 @@ try {
 				createMainWindow();
 			}
 		});
+
+	app.on(
+		'open-url',
+		(event: Event, url: string) => {
+			logInformation(`open-url event with url: ${url}`)
+			processArguments(['todo', url]);
+		}
+	)
 }
 finally {
 	mainWindow = null;
@@ -162,7 +170,7 @@ function createMainWindow() {
 }
 
 function processArguments(otherInstanceArguments: string[]) {
-	console.warn(`processArguments: ${otherInstanceArguments.join(', ')}`);
+	logInformation(`processArguments: ${otherInstanceArguments.join(', ')}`);
 	if (otherInstanceArguments.length !== 2) {
 		throw new Error('Number of arguments is invalid.');
 	}
@@ -213,17 +221,24 @@ function setServiceDefaults() {
 
 }
 
-function logExceptionToApi(error: Error) {
-	console.error(error);
+function logInformation(message: string) {
+	log(message, 'information');
+}
 
-	const clientLoggingUrl = `${serviceBaseUrl}/clientlogging/error`;
+function logExceptionToApi(error: Error) {
+	const message = `${JSON.stringify(`Uncaught exception in the ${process.type} Electron process:\n${error.stack}`)}`;
+	log(message, 'error');
+}
+
+function log(message: string, messageKind: string) {
+	const clientLoggingUrl = `${serviceBaseUrl}/clientlogging/${messageKind}`;
 	const logRequest = net.request({
 		url: clientLoggingUrl,
 		method: 'POST'
 	});
 
 	logRequest.setHeader('Content-Type', 'application/json');
-	logRequest.write(`${JSON.stringify(`Uncaught exception in the ${process.type} Electron process:\n${error.stack}`)}`);
+	logRequest.write(message);
 	logRequest.on(
 		'response',
 		response => {
