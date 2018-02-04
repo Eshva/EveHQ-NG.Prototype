@@ -110,6 +110,36 @@ function getPlugins() {
 		}));
 
 	plugins.push(
+		new HtmlWebpackPlugin({
+			"template": path.resolve(applicationRootDirectory, 'splash.html'),
+			"filename": 'splash.html',
+			"hash": false,
+			"inject": false,
+			"compile": true,
+			"favicon": false,
+			"minify": false,
+			"cache": true,
+			"showErrors": true,
+			"chunks": 'all',
+			"excludeChunks": [],
+			"title": 'EveHQ NG',
+			"xhtml": true,
+			"chunksSortMode": function(left, right) {
+				const leftIndex = entryPoints.indexOf(left.names[0]);
+				const rightindex = entryPoints.indexOf(right.names[0]);
+				if (leftIndex > rightindex) {
+					return 1;
+				}
+				else if (leftIndex < rightindex) {
+					return -1;
+				}
+				else {
+					return 0;
+				}
+			}
+		}));
+
+	plugins.push(
 		new BaseHrefWebpackPlugin({}));
 
 	plugins.push(

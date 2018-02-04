@@ -1,16 +1,15 @@
 import { app, BrowserWindow, screen, net } from 'electron';
-import * as path from 'path';
+import { ApiService } from './api-service';
 
-const os = require('os');
-let webApiProcess: any;
+let apiService: ApiService;
 
 const args = process.argv.slice(1);
-let serve = args.some(val => val === '--serve');
+let isDevelopment = args.some(val => val === '--serve');
 const serviceBaseUrl = 'http://localhost:5000/api';
 
 require('electron-unhandled')({ logger: logExceptionToApi, showDialog: false });
 
-if (serve) {
+if (isDevelopment) {
 	require('electron-reload')(__dirname);
 }
 
@@ -18,17 +17,20 @@ let mainWindow: Electron.BrowserWindow | null;
 try {
 	let isItSecondInstance = app.makeSingleInstance(
 		(otherInstanceArguments: string[], workingDirectory: string) => {
+			console.warn('second!1');
 			if (mainWindow) {
 				if (mainWindow.isMinimized()) {
 					mainWindow.restore();
 				}
 
 				mainWindow.focus();
+				console.warn('second!2');
 				processArguments(otherInstanceArguments);
 			}
 		});
 
 	if (isItSecondInstance) {
+		console.warn('second!3');
 		app.exit();
 	}
 
@@ -38,14 +40,22 @@ try {
 	app.on(
 		'ready',
 		() => {
-			startApi();
+			let splashWindow = createSplashWindow();
+			apiService = new ApiService(isDevelopment);
+			apiService.isServiceStartedEvent.subscribe((isStarted: boolean) => {
+				if (isStarted) {
+					if (mainWindow == null) {
+						console.log(`Main window opening: ${isStarted}`);
+						createMainWindow();
+						mainWindow.webContents.openDevTools();
+					}
 
-			if (mainWindow == null) {
-				createMainWindow();
-				mainWindow.webContents.openDevTools();
-			}
+					splashWindow.close();
+					splashWindow = null;
+				}
+			});
 
-			setServiceDefaults();
+			apiService.ensureStarted();
 		});
 
 	// Quit when all windows are closed.
@@ -59,7 +69,7 @@ try {
 			}
 
 			console.log('exit...');
-			stopApi();
+			apiService.stop();
 		});
 
 	app.on(
@@ -75,68 +85,33 @@ try {
 	app.on(
 		'open-url',
 		(event: Event, url: string) => {
-			logInformation(`open-url event with url: ${url}`)
+			logInformation(`open-url event with url: ${url}`);
 			processArguments(['todo', url]);
 		}
-	)
+	);
 }
 finally {
 	mainWindow = null;
 }
 
-function startApi() {
-	if (serve) {
-		return;
-	}
+function createSplashWindow(): BrowserWindow {
+	const displaySize = screen.getPrimaryDisplay().workAreaSize;
+	const width = 300;
+	const height = 400;
 
-	try {
-		const childProcess = require('child_process').spawn;
+	const splashWindow = new BrowserWindow({
+		x: (displaySize.width - width) / 2,
+		y: (displaySize.height - height) / 2,
+		width: width,
+		height: height
+	});
 
-		//  run server
-		webApiProcess = childProcess(buildPathToWebApi());
-	}
-	catch (error) {
-		console.error(`An error occured: ${error}`);
-	}
-}
+	splashWindow.loadURL(`file://${__dirname}/splash.html`);
 
-function stopApi() {
-	if (serve) {
-		return;
-	}
-
-	webApiProcess.kill();
-}
-
-function buildPathToWebApi(): string {
-	let pathToExecutable: string;
-	switch (os.platform()) {
-		case 'win32':
-			pathToExecutable = 'publish//EveHQ.NG.WebApi.exe';
-			break;
-		case 'linux':
-		case 'darwin':
-			pathToExecutable = 'publish//EveHQ.NG.WebApi';
-			break;
-		default:
-			throw Error(`Unknown platform: ${os.platform()}`);
-	}
-
-	const appPath = app.getAppPath();
-
-	if (serve) {
-		return path.join(appPath, pathToExecutable);
-	}
-
-	const basePath = path.resolve(appPath, '..', '..', 'resources');
-	const isAsar = !!appPath.match(/\.asar$/);
-	const unpackedFolder = isAsar ? 'app.asar.unpacked' : 'app';
-
-	return path.join(basePath, unpackedFolder, pathToExecutable);
+	return splashWindow;
 }
 
 function createMainWindow() {
-
 	const electronScreen = screen;
 	const size = electronScreen.getPrimaryDisplay().workAreaSize;
 
@@ -152,7 +127,7 @@ function createMainWindow() {
 	mainWindow.loadURL(`file://${__dirname}/index.html`);
 
 	// Open the DevTools.
-	if (serve) {
+	if (isDevelopment) {
 		mainWindow.webContents.openDevTools();
 	}
 
@@ -166,7 +141,8 @@ function createMainWindow() {
 		});
 
 	mainWindow.on('unresponsive', () => logExceptionToApi(new Error('Main window is unresponsive.')));
-	mainWindow.webContents.on('crashed', (event: any, killed: boolean) => logExceptionToApi(new Error(`Renderer process crashed. Killed: ${killed}.`)));
+	mainWindow.webContents.on('crashed',
+		(event: any, killed: boolean) => logExceptionToApi(new Error(`Renderer process crashed. Killed: ${killed}.`)));
 }
 
 function processArguments(otherInstanceArguments: string[]) {
@@ -196,29 +172,6 @@ function processArguments(otherInstanceArguments: string[]) {
 	else {
 		throw new Error('Bad format of authentication code replay.');
 	}
-}
-
-function setServiceDefaults() {
-	const settings = JSON.stringify({
-		applicationFolder: app.getAppPath(),
-		applicationDataFolder: app.getPath('appData'),
-		temporaryDataFolder: app.getPath('temp')
-	});
-
-	const setServiceDefaultsRequest = net.request({
-		url: `${serviceBaseUrl}/settings/setDefaults`,
-		method: 'POST'
-	});
-
-	setServiceDefaultsRequest.setHeader('Content-Type', 'application/json');
-	setServiceDefaultsRequest.write(settings);
-	setServiceDefaultsRequest.on(
-		'response',
-		response => {
-			console.warn(`Status of set defaults call: ${response.statusCode}`);
-		});
-	setServiceDefaultsRequest.end();
-
 }
 
 function logInformation(message: string) {

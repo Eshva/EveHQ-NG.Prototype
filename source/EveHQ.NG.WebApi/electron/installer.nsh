@@ -7,7 +7,7 @@
   WriteRegStr HKCR "eveauth-evehq-ng\DefaultIcon" "" "$INSTDIR\${APP_EXECUTABLE_FILENAME}"
   WriteRegStr HKCR "eveauth-evehq-ng\shell" "" ""
   WriteRegStr HKCR "eveauth-evehq-ng\shell\open" "" ""
-  WriteRegStr HKCR "eveauth-evehq-ng\shell\Open\command" "" "$INSTDIR\${APP_EXECUTABLE_FILENAME} %1"
+  WriteRegStr HKCR "eveauth-evehq-ng\shell\Open\command" "" '"$INSTDIR\${APP_EXECUTABLE_FILENAME}" %1'
 !macroend
 
 !macro customUnInstall
