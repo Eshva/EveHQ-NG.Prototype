@@ -17,20 +17,17 @@ let mainWindow: Electron.BrowserWindow | null;
 try {
 	let isItSecondInstance = app.makeSingleInstance(
 		(otherInstanceArguments: string[], workingDirectory: string) => {
-			console.warn('second!1');
 			if (mainWindow) {
 				if (mainWindow.isMinimized()) {
 					mainWindow.restore();
 				}
 
 				mainWindow.focus();
-				console.warn('second!2');
 				processArguments(otherInstanceArguments);
 			}
 		});
 
 	if (isItSecondInstance) {
-		console.warn('second!3');
 		app.exit();
 	}
 
@@ -81,14 +78,6 @@ try {
 				createMainWindow();
 			}
 		});
-
-	app.on(
-		'open-url',
-		(event: Event, url: string) => {
-			logInformation(`open-url event with url: ${url}`);
-			processArguments(['todo', url]);
-		}
-	);
 }
 finally {
 	mainWindow = null;
