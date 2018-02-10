@@ -23,7 +23,7 @@ try {
 				}
 
 				mainWindow.focus();
-				processArguments(otherInstanceArguments);
+				authenticateWithCode(otherInstanceArguments);
 			}
 		});
 
@@ -78,6 +78,14 @@ try {
 				createMainWindow();
 			}
 		});
+
+	app.on(
+		'open-url',
+		(event: Event, url: string) => {
+			logInformation(`open-url event with url: ${url}`);
+			authenticateWithCode(['todo', url]);
+		}
+	);
 }
 finally {
 	mainWindow = null;
@@ -134,8 +142,8 @@ function createMainWindow() {
 		(event: any, killed: boolean) => logExceptionToApi(new Error(`Renderer process crashed. Killed: ${killed}.`)));
 }
 
-function processArguments(otherInstanceArguments: string[]) {
-	logInformation(`processArguments: ${otherInstanceArguments.join(', ')}`);
+function authenticateWithCode(otherInstanceArguments: string[]) {
+	logInformation(`authenticateWithCode: ${otherInstanceArguments.join(', ')}`);
 	if (otherInstanceArguments.length !== 2) {
 		throw new Error('Number of arguments is invalid.');
 	}
@@ -145,8 +153,7 @@ function processArguments(otherInstanceArguments: string[]) {
 
 	if (match != null) {
 		const [code, state] = match;
-		const localAuthenticationServiceUrl =
-			`${serviceBaseUrl}/authentication/authenticatioWithCode?codeUri=${code}&state=${state}`;
+		const localAuthenticationServiceUrl = `${serviceBaseUrl}/authentication/authenticateWithCode?codeUri=${code}&state=${state}`;
 		const authenticationRequest = net.request({
 			url: localAuthenticationServiceUrl,
 			method: 'POST'

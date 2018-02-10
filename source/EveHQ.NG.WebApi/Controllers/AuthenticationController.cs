@@ -40,7 +40,7 @@ namespace EveHQ.NG.WebApi.Controllers
 		[HttpGet("GetAuthenticationUri")]
 		public IActionResult GetAuthenticationUri() => Json(_authenticator.GetAuthenticationUri());
 
-		[HttpPost("AuthenticatioWithCode")]
+		[HttpPost("AuthenticateWithCode")]
 		public async Task<IActionResult> AuthenticateCharacterWithAutharizationCode([FromQuery] string codeUri, [FromQuery] string state)
 		{
 			var tokens = await _authenticator.AuthenticateCharacterWithAuthorizationCode(codeUri, state);
