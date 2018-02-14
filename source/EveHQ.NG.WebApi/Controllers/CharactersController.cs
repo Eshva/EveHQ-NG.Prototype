@@ -6,6 +6,7 @@
 
 #region Usings
 
+using System.Linq;
 using System.Threading.Tasks;
 using EveHQ.NG.WebApi.Characters;
 using Microsoft.AspNetCore.Mvc;
@@ -19,10 +20,12 @@ namespace EveHQ.NG.WebApi.Controllers
 	{
 		public CharactersController(
 			ILoggedInCharacterRepository characterRepository,
-			ICharactersApi charactersApi)
+			ICharactersApi charactersApi,
+			ITypesCatalog typesCatalog)
 		{
 			_characterRepository = characterRepository;
 			_charactersApi = charactersApi;
+			_typesCatalog = typesCatalog;
 		}
 
 		[HttpGet]
@@ -33,10 +36,15 @@ namespace EveHQ.NG.WebApi.Controllers
 			Json(_characterRepository.GetCharacterById(id).Information);
 
 		[HttpGet("{id}/skillqueue")]
-		public async Task<IActionResult> GetSkillQueue([FromRoute] uint id) =>
-			Json(await _charactersApi.GetSkillQueue(_characterRepository.GetCharacterById(id)));
+		public async Task<IActionResult> GetSkillQueue([FromRoute] uint id)
+		{
+			var skillQueueItems = (await _charactersApi.GetSkillQueue(_characterRepository.GetCharacterById(id))).ToList();
+			_typesCatalog.FillSkillNames(skillQueueItems);
+			return Json(skillQueueItems);
+		}
 
 		private readonly ILoggedInCharacterRepository _characterRepository;
 		private readonly ICharactersApi _charactersApi;
+		private readonly ITypesCatalog _typesCatalog;
 	}
 }

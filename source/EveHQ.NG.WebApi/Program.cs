@@ -1,6 +1,8 @@
 #region Usings
 
 using System;
+using System.Reflection;
+using EveHQ.NG.WebApi.Infrastructure;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Serilog;
@@ -22,6 +24,8 @@ namespace EveHQ.NG.WebApi
 			try
 			{
 				Log.Information("Starting web host...");
+				var sdeExtractor = new SdeExtractor();
+				sdeExtractor.ExtractIfNeeded();
 				BuildWebHost(args).Run();
 
 				return 0;

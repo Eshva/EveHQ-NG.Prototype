@@ -10,21 +10,17 @@
 		"buildResources": "./electron/build"
 	},
 	"artifactName": "${name}-${version}.${ext}",
+	"files": [
+		"**/*",
+		"publish"
+	],
 	"mac": {
 		"category": "cross-platform-desktop",
 		"target": [
 			"pkg"
-		],
-		"files": [
-			"**/*",
-			"publish"
 		]
 	},
 	"win": {
-		"files": [
-			"**/*",
-			"publish"
-		],
 		"target": [
 			"nsis"
 		]
@@ -39,10 +35,6 @@
 	"linux": {
 		"category": "Game;Utility;",
 		"packageCategory": "Game;Utility;",
-		"files": [
-			"**/*",
-			"publish"
-		],
 		"target": [
 			"deb"
 		],

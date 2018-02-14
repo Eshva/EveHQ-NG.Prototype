@@ -22,7 +22,7 @@ namespace EveHQ.NG.WebApi.Controllers
 			_applicationSettings.Update(
 				applicationSettings =>
 				{
-					applicationSettings.FolderSettings.ApplicationDataFolder = settings.ApplicationDataFolder;
+					applicationSettings.FolderSettings.TemporaryDataFolder = settings.TemporaryDataFolder;
 				});
 			return Ok();
 		}

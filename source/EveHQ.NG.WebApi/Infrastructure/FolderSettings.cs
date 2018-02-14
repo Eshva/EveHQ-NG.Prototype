@@ -4,11 +4,23 @@
 // Автор: Mike Eshva (mike@eshva.ru)
 // Дата создания: 29.01.2018
 
+#region Usings
+
+using System;
+
+#endregion
+
+
 namespace EveHQ.NG.WebApi.Infrastructure
 {
 	public sealed class FolderSettings
 	{
-		public string ApplicationDataFolder { get; set; } = string.Empty;
+		public FolderSettings()
+		{
+			ApplicationDataFolder = $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\\EveHQ NG";
+		}
+
+		public string ApplicationDataFolder { get; set; }
 
 		public string TemporaryDataFolder { get; set; } = string.Empty;
 	}
